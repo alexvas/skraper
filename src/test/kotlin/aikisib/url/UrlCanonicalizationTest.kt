@@ -1,0 +1,544 @@
+@file:Suppress("NonAsciiCharacters", "ClassName")
+
+package aikisib.url
+
+import aikisib.url.UrlTransformerHtmlTest.Companion.AMPERSAND
+import aikisib.url.UrlTransformerHtmlTest.Companion.SLASH
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatIllegalArgumentException
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import java.net.URI
+import java.net.URLEncoder
+import kotlin.text.Charsets.UTF_8
+
+class UrlCanonicalizationTest {
+
+    // Корневой URI для всех абсолютных
+    private val root = URI.create("https://aikido.nsk.su")
+    private val sut: UrlCanonicolizer = UrlCanonicolizerImpl
+
+    @Nested
+    inner class `путь отсутствует` {
+
+        @Test
+        fun `прибавляем слэш после корневого пути`() {
+            // given
+            val input = "$root"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$input/")
+        }
+
+        @Test
+        fun `не удаляем слэш после корневого пути`() {
+            // given
+            val input = "$root/"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo(input)
+        }
+    }
+
+    @Nested
+    inner class `путь записан ASCII` {
+
+        private val path = "i"
+
+        @Test
+        fun `не прибавляем слэш после пути`() {
+            // given
+            val input = "$root/$path"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo(input)
+        }
+
+        @Test
+        fun `удаляем слэш после пути`() {
+            // given
+            val input = "$root/$path/"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/$path")
+        }
+
+        @Test
+        fun `если слэш кодирован, удаляем его тоже`() {
+            // given
+            val encodedSlash = "/".urlEncode()
+            val input = "$root/$path$encodedSlash"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.rawPath).isEqualTo("/$path")
+        }
+    }
+
+    @Nested
+    inner class `путь записан кириллицей` {
+
+        private val path = "ы"
+        private val encodedPath = path.urlEncode()
+
+        @Test
+        fun `не прибавляем слэш после пути`() {
+            // given
+            val input = "$root/$path"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/$encodedPath")
+        }
+
+        @Test
+        fun `удаляем слэш после пути`() {
+            // given
+            val input = "$root/$path/"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/$encodedPath")
+        }
+
+        @Test
+        fun `если слэш кодирован, удаляем его тоже`() {
+            // given
+            val encodedSlash = "/".urlEncode()
+            val input = "$root/$path$encodedSlash"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.rawPath).isEqualTo("/$encodedPath")
+        }
+    }
+
+    @Nested
+    inner class `в пути имеются кодированные спецсимволы` {
+
+        private val encodedPath = "i$SLASH$AMPERSAND"
+
+        @Test
+        fun `не прибавляем слэш после пути`() {
+            // given
+            val input = "$root/$encodedPath"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/i/&")
+        }
+
+        @Test
+        fun `удаляем слэш после пути`() {
+            // given
+            val input = "$root/$encodedPath/"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/i/&")
+        }
+
+        @Test
+        fun `если слэш кодирован, удаляем его тоже`() {
+            // given
+            val input = "$root/$encodedPath$SLASH"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.rawPath).isEqualTo("/i/&")
+        }
+    }
+
+    @Nested
+    inner class `путь URL кодирован` {
+
+        private val encodedPath = "ы".urlEncode()
+
+        @Test
+        fun `не прибавляем слэш после пути`() {
+            // given
+            val input = "$root/$encodedPath"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo(input)
+        }
+
+        @Test
+        fun `удаляем слэш после пути`() {
+            // given
+            val input = "$root/$encodedPath/"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/$encodedPath")
+        }
+
+        @Test
+        fun `если слэш кодирован, удаляем его тоже`() {
+            // given
+            val encodedSlash = "/".urlEncode()
+            val input = "$root/$encodedPath$encodedSlash"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/$encodedPath")
+        }
+    }
+
+    @Nested
+    inner class `после пути имеется query запрос` {
+
+        private val path = "i"
+        private val query = "a=b&c=d&f"
+
+        @Test
+        fun `не прибавляем слэш после пути`() {
+            // given
+            val input = "$root/$path?$query"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo(input)
+        }
+
+        @Test
+        fun `удаляем слэш после пути`() {
+            // given
+            val input = "$root/$path/?$query"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/$path?$query")
+        }
+
+        @Test
+        fun `если слэш кодирован, удаляем его тоже`() {
+            // given
+            val encodedSlash = "/".urlEncode()
+            val input = "$root/$path$encodedSlash?$query"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.rawPath).isEqualTo("/$path")
+        }
+    }
+
+    @Nested
+    inner class `после пути имеется кириллический query запрос` {
+
+        private val path = "i"
+        private val query = "а=б&в=г&д"
+
+        @Test
+        fun `не прибавляем слэш после пути`() {
+            // given
+            val input = "$root/$path?$query"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo(input)
+        }
+
+        @Test
+        fun `удаляем слэш после пути`() {
+            // given
+            val input = "$root/$path/?$query"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/$path?$query")
+        }
+
+        @Test
+        fun `если слэш кодирован, удаляем его тоже`() {
+            // given
+            val encodedSlash = "/".urlEncode()
+            val input = "$root/$path$encodedSlash?$query"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.rawPath).isEqualTo("/$path")
+        }
+    }
+
+    @Nested
+    inner class фрагмент {
+
+        private val path = "i"
+        private val query = "a=b&c=d&f"
+
+        @Nested
+        inner class `без особых символов` {
+            private val fragment = "2478xdfjk,,21-"
+
+            @Test
+            fun `не прибавляем слэш после пути`() {
+                // given
+                val input = "$root/$path?$query#$fragment"
+
+                // when
+                val canonical = sut.canonicalize(root, input)
+
+                // then
+                assertThat(canonical.toString()).isEqualTo(input)
+            }
+
+            @Test
+            fun `удаляем слэш после пути`() {
+                // given
+                val input = "$root/$path/?$query#$fragment"
+
+                // when
+                val canonical = sut.canonicalize(root, input)
+
+                // then
+                assertThat(canonical.toString()).isEqualTo("$root/$path?$query#$fragment")
+            }
+
+            @Test
+            fun `если слэш кодирован, удаляем его тоже`() {
+                // given
+                val encodedSlash = "/".urlEncode()
+                val input = "$root/$path$encodedSlash?$query#$fragment"
+
+                // when
+                val canonical = sut.canonicalize(root, input)
+
+                // then
+                assertThat(canonical.rawPath).isEqualTo("/$path")
+            }
+        }
+
+        @Nested
+        inner class `со слэшем` {
+            private val fragment = "2478x/dfjk/1=2/,,21-"
+
+            @Test
+            fun `не прибавляем слэш после пути`() {
+                // given
+                val input = "$root/$path?$query#$fragment"
+
+                // when
+                val canonical = sut.canonicalize(root, input)
+
+                // then
+                assertThat(canonical.toString()).isEqualTo(input)
+            }
+
+            @Test
+            fun `удаляем слэш после пути`() {
+                // given
+                val input = "$root/$path/?$query#$fragment"
+
+                // when
+                val canonical = sut.canonicalize(root, input)
+
+                // then
+                assertThat(canonical.toString()).isEqualTo("$root/$path?$query#$fragment")
+            }
+
+            @Test
+            fun `если слэш кодирован, удаляем его тоже`() {
+                // given
+                val encodedSlash = "/".urlEncode()
+                val input = "$root/$path$encodedSlash?$query#$fragment"
+
+                // when
+                val canonical = sut.canonicalize(root, input)
+
+                // then
+                assertThat(canonical.rawPath).isEqualTo("/$path")
+            }
+        }
+
+        @Nested
+        inner class `с вопросом` {
+            private val fragment = "2478x?,,21-"
+
+            @Test
+            fun `не прибавляем слэш после пути`() {
+                // given
+                val input = "$root/$path?$query#$fragment"
+
+                // when
+                val canonical = sut.canonicalize(root, input)
+
+                // then
+                assertThat(canonical.toString()).isEqualTo(input)
+            }
+
+            @Test
+            fun `удаляем слэш после пути`() {
+                // given
+                val input = "$root/$path/?$query#$fragment"
+
+                // when
+                val canonical = sut.canonicalize(root, input)
+
+                // then
+                assertThat(canonical.toString()).isEqualTo("$root/$path?$query#$fragment")
+            }
+
+            @Test
+            fun `если слэш кодирован, удаляем его тоже`() {
+                // given
+                val encodedSlash = "/".urlEncode()
+                val input = "$root/$path$encodedSlash?$query#$fragment"
+
+                // when
+                val canonical = sut.canonicalize(root, input)
+
+                // then
+                assertThat(canonical.rawPath).isEqualTo("/$path")
+            }
+        }
+
+        private val fragment = "2478x#,,21-"
+
+        @Test
+        fun `фрагмент с решёткой запрещён`() {
+            // given
+            val input = "$root/$path?$query#$fragment"
+
+            assertThatIllegalArgumentException()
+                .isThrownBy {
+                    // when
+                    sut.canonicalize(root, input)
+                }
+                // then
+                .withMessageContaining("Illegal character in fragment at index ")
+        }
+    }
+
+    @Nested
+    inner class `относительный путь` {
+
+        @Test
+        fun `разрешается верно`() {
+            // given
+            val parent = URI("$root/plugins/somePlugin/css/someStyle.css")
+            val relativeInput = "../fonts/someFont.wolf2"
+
+            // when
+            val canonical = sut.canonicalize(parent, relativeInput)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/plugins/somePlugin/fonts/someFont.wolf2")
+        }
+
+        @Test
+        fun `относительно корневого узла тоже верно`() {
+            // given
+            val relativeInput = "./fonts/someFont.wolf2"
+
+            // when
+            val canonical = sut.canonicalize(root, relativeInput)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/fonts/someFont.wolf2")
+        }
+
+        @Test
+        fun `относительно корневого узла со слэшем тоже верно`() {
+            // given
+            val parent = URI("$root/")
+            val relativeInput = "./fonts/someFont.wolf2"
+
+            // when
+            val canonical = sut.canonicalize(parent, relativeInput)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/fonts/someFont.wolf2")
+        }
+
+        @Test
+        fun `путь-точка в корневом узле`() {
+            // given
+            val relativeInput = "."
+
+            // when
+            val canonical = sut.canonicalize(root, relativeInput)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/")
+            assertThat(canonical).isEqualTo(URI("$root/"))
+        }
+
+        @Test
+        fun `путь-точка в корневом узле со слэшем`() {
+            // given
+            val relativeInput = "."
+            val parent = URI("$root/")
+
+            // when
+            val canonical = sut.canonicalize(parent, relativeInput)
+
+            // then
+            assertThat(canonical.toString()).isEqualTo("$root/")
+            assertThat(canonical).isEqualTo(URI("$root/"))
+        }
+
+        @Test
+        fun `некорректный путь относительно корневого узла вызовет ошибку`() {
+            // given
+            val relativeInput = "../somefile.jpg"
+
+            assertThatIllegalArgumentException()
+                .isThrownBy {
+                    // when
+                    sut.canonicalize(root, relativeInput)
+                }
+                // then
+                .withMessageContaining("Результирующий URL ")
+                .withMessageContaining(" невалидный")
+        }
+    }
+}
+
+internal fun String.urlEncode(): String =
+    URLEncoder.encode(this, UTF_8)
