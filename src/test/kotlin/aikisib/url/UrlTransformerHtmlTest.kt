@@ -116,9 +116,6 @@ class UrlTransformerHtmlTest {
     @Nested
     inner class `Html с кириллической query` {
 
-        private val encoded1 = "ы".urlEncode()
-        private val encoded2 = "э".urlEncode()
-
         @Test
         fun `расшиваем корневую query`() {
             // given
@@ -128,7 +125,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = canonicolizer.canonicalize(root, "/${QUESTION}$encoded1.html")
+            val expected = URI("${root}${QUESTION}ы.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -136,13 +133,13 @@ class UrlTransformerHtmlTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/i?$encoded1")
+            val input = canonicolizer.canonicalize(root, "/i?ы")
 
             // when
             val result = transform(input)
 
             // then
-            val expected = canonicolizer.canonicalize(root, "/i/${QUESTION}$encoded1.html")
+            val expected = URI("${root}i/${QUESTION}ы.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -156,7 +153,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}i/${QUESTION}${encoded1}${AMPERSAND}$encoded2.html")
+            val expected = URI("${root}i/${QUESTION}ы${AMPERSAND}э.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -170,7 +167,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}i/${QUESTION}${encoded1}${EQUALS}t${AMPERSAND}${encoded2}${EQUALS}u.html")
+            val expected = URI("${root}i/${QUESTION}ы${EQUALS}t${AMPERSAND}э${EQUALS}u.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -179,31 +176,30 @@ class UrlTransformerHtmlTest {
 
     @Nested
     inner class `Html с кириллическим путём` {
-        private val encoded1 = "ы".urlEncode()
 
         @Test
         fun `когда ничего делать не надо`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/$encoded1.html")
+            val input = URI("${root}ы.html")
 
             // when
             val result = transform(input)
 
             // then
-            assertThat(result.toString()).isEqualTo("$root$encoded1.html")
+            assertThat(result.toString()).isEqualTo("${root}ы.html")
             assertThat(result).isEqualTo(input)
         }
 
         @Test
         fun `добавляем расширение html`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/$encoded1")
+            val input = canonicolizer.canonicalize(root, "/ы")
 
             // when
             val result = transform(input)
 
             // then
-            val expected = URI("${root}$encoded1/index.html")
+            val expected = URI("${root}ы/index.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -211,13 +207,13 @@ class UrlTransformerHtmlTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/$encoded1?a")
+            val input = canonicolizer.canonicalize(root, "/ы?a")
 
             // when
             val result = transform(input)
 
             // then
-            val expected = URI("${root}$encoded1/${QUESTION}a.html")
+            val expected = URI("${root}ы/${QUESTION}a.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -225,13 +221,13 @@ class UrlTransformerHtmlTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/$encoded1?f&g")
+            val input = canonicolizer.canonicalize(root, "/ы?f&g")
 
             // when
             val result = transform(input)
 
             // then
-            val expected = URI("${root}$encoded1/${QUESTION}f${AMPERSAND}g.html")
+            val expected = URI("${root}ы/${QUESTION}f${AMPERSAND}g.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -239,13 +235,13 @@ class UrlTransformerHtmlTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/$encoded1?foo=t&bar=u")
+            val input = canonicolizer.canonicalize(root, "/ы?foo=t&bar=u")
 
             // when
             val result = transform(input)
 
             // then
-            val expected = URI("${root}$encoded1/${QUESTION}foo${EQUALS}t${AMPERSAND}bar${EQUALS}u.html")
+            val expected = URI("${root}ы/${QUESTION}foo${EQUALS}t${AMPERSAND}bar${EQUALS}u.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -255,20 +251,16 @@ class UrlTransformerHtmlTest {
     @Nested
     inner class `Html с кириллическими query и путём` {
 
-        private val encoded1 = "ы".urlEncode()
-        private val encoded2 = "э".urlEncode()
-        private val encoded3 = "ф".urlEncode()
-
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/$encoded3?$encoded1")
+            val input = canonicolizer.canonicalize(root, "/ф?ы")
 
             // when
             val result = transform(input)
 
             // then
-            val expected = URI("${root}$encoded3/${QUESTION}$encoded1.html")
+            val expected = URI("${root}ф/${QUESTION}ы.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -276,13 +268,13 @@ class UrlTransformerHtmlTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/$encoded3?ы&э")
+            val input = canonicolizer.canonicalize(root, "/ф?ы&э")
 
             // when
             val result = transform(input)
 
             // then
-            val expected = URI("${root}$encoded3/${QUESTION}${encoded1}${AMPERSAND}$encoded2.html")
+            val expected = URI("${root}ф/${QUESTION}ы${AMPERSAND}э.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -290,13 +282,13 @@ class UrlTransformerHtmlTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/$encoded3?ы=t&э=u")
+            val input = canonicolizer.canonicalize(root, "/ф?ы=t&э=u")
 
             // when
             val result = transform(input)
 
             // then
-            val expected = URI("${root}$encoded3/$QUESTION${encoded1}${EQUALS}t${AMPERSAND}${encoded2}${EQUALS}u.html")
+            val expected = URI("${root}ф/${QUESTION}ы${EQUALS}t${AMPERSAND}э${EQUALS}u.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -307,7 +299,5 @@ class UrlTransformerHtmlTest {
         val EQUALS = "=".urlEncode()
         val SLASH = "/".urlEncode()
         val AMPERSAND = "&".urlEncode()
-        val HASH = "#".urlEncode()
     }
-
 }
