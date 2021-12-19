@@ -3,8 +3,6 @@
 package aikisib
 
 import io.github.bonigarcia.wdm.WebDriverManager
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -15,15 +13,13 @@ import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeOptions
 import java.io.File
 
-
 class WdmTest {
     lateinit var driver: WebDriver
     private val wdm: WebDriverManager = WebDriverManager.chromedriver().browserInDocker()
 
     @BeforeEach
     fun setupTest() {
-        val chromeOptions = ChromeOptions().also {
-        }
+        val chromeOptions = ChromeOptions()
         val prefs = mutableMapOf<String, Any>()
         prefs["download.prompt_for_download"] = false
         chromeOptions.setExperimentalOption("prefs", prefs)
@@ -51,7 +47,7 @@ class WdmTest {
     fun `Домашняя страница открывается`() {
         driver.run {
             get(homePageUrl)
-            pageSource shouldContain "Айкидо"
+            assertThat(pageSource).contains("Айкидо")
 
             val links: List<WebElement> = findElements(By.tagName("a"))
             val hrefs = links
@@ -62,8 +58,10 @@ class WdmTest {
                 .joinToString(separator = "\n")
             with(File("/tmp/aikisib.links.txt")) {
                 val creationResult = createNewFile()
-                creationResult shouldBe true
-                writeText(hrefs)
+                if (creationResult)
+                    writeText(hrefs)
+                else
+                    System.err.println("failed to create /tmp/aikisib.links.txt")
             }
             quit()
         }

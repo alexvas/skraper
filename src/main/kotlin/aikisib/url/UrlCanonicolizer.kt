@@ -1,6 +1,9 @@
 package aikisib.url
 
-import io.ktor.http.*
+import io.ktor.http.URLBuilder
+import io.ktor.http.encodeURLPath
+import io.ktor.http.takeFrom
+import io.ktor.http.toURI
 import org.apache.commons.validator.routines.UrlValidator
 import java.net.URI
 

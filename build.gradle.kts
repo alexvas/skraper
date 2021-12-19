@@ -10,8 +10,8 @@ plugins {
     application
 }
 
-group="aikisib"
-version="1.0-SNAPSHOT"
+group = "aikisib"
+version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -57,10 +57,6 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-logging:$ktorVersion")
 
-    val kotestVersion = "5.0.1"
-    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
-    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
-    testImplementation("io.kotest:kotest-property:$kotestVersion")
     testImplementation("org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion")
 
     testImplementation("org.assertj:assertj-core:3.21.0")
@@ -69,14 +65,15 @@ dependencies {
     // logging facade
     implementation("io.github.microutils:kotlin-logging:2.1.16")
     runtimeOnly("org.slf4j:jul-to-slf4j:1.7.32")
-    runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.14.1")
+    runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.16.0")
     runtimeOnly("ch.qos.logback:logback-classic:1.2.9")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    val junitVersion = "5.8.2"
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     // рантаймовая зависимость на реализацию логирования slf4j для тестов
     testRuntimeOnly("org.slf4j:jul-to-slf4j:1.7.32")
-    testRuntimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.14.1")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.16.0")
     testRuntimeOnly("ch.qos.logback:logback-classic:1.2.8")
 }

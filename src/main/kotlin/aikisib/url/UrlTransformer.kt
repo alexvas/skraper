@@ -1,6 +1,9 @@
 package aikisib.url
 
-import io.ktor.http.*
+import io.ktor.http.ContentType
+import io.ktor.http.URLBuilder
+import io.ktor.http.takeFrom
+import io.ktor.http.toURI
 import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
@@ -23,6 +26,7 @@ interface UrlTransformer {
     fun transform(contentType: ContentType, input: URI): URI
 }
 
+@Suppress("TooManyFunctions")
 internal object UrlTransformerImpl : UrlTransformer {
     private val extensions = mapOf(
         ContentType.Text.Html to "html",
@@ -40,7 +44,8 @@ internal object UrlTransformerImpl : UrlTransformer {
         if (query.isNullOrBlank())
             return input.maybeFixExtension(contentType)
 
-        val shouldBeExt = extensions[contentType] ?: error("не определено расширение для URI $input с типом содержимого $contentType")
+        val shouldBeExt = extensions[contentType]
+            ?: error("не определено расширение для URI $input с типом содержимого $contentType")
         val p = input.path
         val last = p.splitToSequence('/').last()
         return when (last.substringAfterLast('.')) {
@@ -116,8 +121,8 @@ internal object UrlTransformerImpl : UrlTransformer {
 
     private fun String.encode(): String {
         val encoder = UTF_8.newEncoder()
-        val charBuffer = CharBuffer.allocate(1).mark()
-        val byteBuffer = ByteBuffer.allocate(4).mark()
+        val charBuffer = CharBuffer.allocate(SINGLE_UNICODE_CHAR)
+        val byteBuffer = ByteBuffer.allocate(FOUR_BYTES_IN_SINGLE_UNICODE_CHAR_MAX)
         return buildString {
             // только двухбайтные символы
             this@encode.forEach { char ->
@@ -145,6 +150,7 @@ internal object UrlTransformerImpl : UrlTransformer {
         }
     }
 
+    @Suppress("MagicNumber")
     private fun Byte.percentEncode(): String = buildString(3) {
         val code = this@percentEncode.toInt() and 0xff
         append('%')
@@ -152,6 +158,7 @@ internal object UrlTransformerImpl : UrlTransformer {
         append(hexDigitToChar(code and 0x0f))
     }
 
+    @Suppress("MagicNumber")
     private fun hexDigitToChar(digit: Int): Char = when (digit) {
         in 0..9 -> '0' + digit
         else -> 'A' + digit - 10
@@ -166,4 +173,6 @@ internal object UrlTransformerImpl : UrlTransformer {
     private val URL_ALPHABET = (('a'..'z') + ('A'..'Z') + ('0'..'9')).map { it.code.toByte() }
 
     private const val SPACE: Byte = ' '.code.toByte()
+    private const val SINGLE_UNICODE_CHAR = 1
+    private const val FOUR_BYTES_IN_SINGLE_UNICODE_CHAR_MAX = 4
 }
