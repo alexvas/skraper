@@ -1,4 +1,4 @@
-package aikisib
+package aikisib.slider
 
 import org.aeonbits.owner.Config
 import org.aeonbits.owner.Config.DefaultValue

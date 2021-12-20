@@ -1,4 +1,4 @@
-package aikisib
+package aikisib.slider
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -49,7 +49,6 @@ interface SliderRevolutionScraper {
      */
     suspend fun downloadModuleZip(id: Int, nonce: String): ByteArray
 }
-
 
 class SliderRevolutionScraperImpl(
     /**
@@ -149,5 +148,4 @@ class SliderRevolutionScraperImpl(
         private const val REV_SLIDER_PATH = "/wp-admin/admin.php?page=revslider"
         internal val NONCE_REGEX = Regex("""RVS\.ENV\.nonce\s*=\s*'([^']+)';""")
     }
-
 }

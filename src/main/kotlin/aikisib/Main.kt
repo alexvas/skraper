@@ -1,5 +1,10 @@
 package aikisib
 
+import aikisib.mirror.RecursiveScraper
+import aikisib.mirror.RecursiveScraperImpl
+import aikisib.slider.SliderRepo
+import aikisib.slider.SliderRevolutionScraper
+import aikisib.slider.SliderRevolutionScraperImpl
 import mu.KLoggable
 import org.aeonbits.owner.Config
 import org.aeonbits.owner.ConfigFactory
@@ -10,9 +15,20 @@ import kotlin.system.exitProcess
 
 suspend fun main() {
     setDefaultUncaughtExceptionHandler(DefaultUncaughtExceptionHandler())
+    val mainConfig: MainConfig = createConfig(MainConfig::class)
 
+//    exportSliderRevolutionModules()
+    mirrorSite(mainConfig)
+}
+
+suspend fun mirrorSite(sliderRepo: MainConfig) {
+    val recursiveScraper: RecursiveScraper = RecursiveScraperImpl()
+    recursiveScraper.mirror(sliderRepo.publicUrl(), File("/tmp/stockDir"))
+}
+
+@Suppress("UnusedPrivateMember")
+private suspend fun exportSliderRevolutionModules(sliderRepo: SliderRepo) {
     val vault: Vault = createConfig(Vault::class)
-    val sliderRepo: SliderRepo = createConfig(SliderRepo::class)
     val sliderRevolutionScraper: SliderRevolutionScraper = SliderRevolutionScraperImpl(sliderRepo.adminUrl())
 
     val success = sliderRevolutionScraper.loginIntoWordpress(
