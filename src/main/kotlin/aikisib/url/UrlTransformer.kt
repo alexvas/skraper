@@ -102,23 +102,26 @@ internal object UrlTransformerImpl : UrlTransformer {
         val shouldBeExt = extensions[contentType] ?: return this
         require(!rawPath.isNullOrBlank()) { "канонический URI должен иметь ненулевой путь, а не $this" }
 
-        val fixedPath = rawPath.maybeFixExtension(shouldBeExt)
+        val fixedPath = rawPath.maybeFixExtension(contentType, shouldBeExt)
         return withPathAndNoQuery(fixedPath)
     }
 
-    private fun String.maybeFixExtension(shouldBeExt: String): String {
+    private fun String.maybeFixExtension(contentType: ContentType, shouldBeExt: String): String {
         if (this == "/")
             return "/index.html"
         val last = splitToSequence('/').last()
         return when (last.substringAfterLast('.')) {
             shouldBeExt -> this
-            last -> {
-                require(shouldBeExt == "html") {
-                    "Непонятный путь, который не содержит расширений: '$this' (планировалось $shouldBeExt)"
-                }
-                "$this/index.html"
-            }
+            last -> addExtension(contentType)
             else -> "$this.$shouldBeExt"
+        }
+    }
+
+    private fun String.addExtension(contentType: ContentType): String {
+        return when(contentType) {
+            ContentType.Text.Html -> "$this/index.html"
+            ContentType.Application.Json -> "$this.json"
+            else -> error("Непонятный путь, который не содержит расширений: '$this' для типа $contentType")
         }
     }
 

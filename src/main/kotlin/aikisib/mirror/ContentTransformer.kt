@@ -40,7 +40,13 @@ private class ContentTransformerImpl(
     override fun transformingMoveFileInPlace() {
         var content = originalDescription.localPath.readText()
         for ((fromLink, toLink) in relativeLinks) {
-            content = content.replace(fromLink, toLink.toString())
+            content = content.replace(
+                "'$fromLink'",
+                "'$toLink'",
+            ).replace(
+                """"$fromLink"""",
+                """"$toLink"""",
+            )
         }
         target.parent.createDirectories()
         try {

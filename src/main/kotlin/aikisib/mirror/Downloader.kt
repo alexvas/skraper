@@ -29,12 +29,13 @@ interface Downloader {
      * @param from - откуда качать.
      * @return описание скачанного ресурса, включая ссылку на файл.
      */
-    suspend fun download(from: URI): OriginalDescription
+    suspend fun download(from: URI): OriginalDescription?
 }
 
 internal class DownloaderImpl : Downloader {
 
     private val client = HttpClient(CIO) {
+        expectSuccess = false
         install(Logging) {
             logger = object : Logger {
                 override fun log(message: String) {
@@ -45,13 +46,16 @@ internal class DownloaderImpl : Downloader {
         }
     }
 
-    override suspend fun download(from: URI): OriginalDescription {
+    override suspend fun download(from: URI): OriginalDescription? {
         val response = client.get {
             url {
                 takeFrom(from)
             }
         }
-        check(response.status == HttpStatusCode.OK) { "Неверный статус при скачивании $from: ${response.status}" }
+        if (response.status != HttpStatusCode.OK) {
+            logger.warn { "Статус ${response.status} для $from." }
+            return null
+        }
         val contentType = response.contentType()
         check(contentType != null) { "Скачали не пойми что: $from" }
         val hostPrefix = from.host.replace('.', '_')

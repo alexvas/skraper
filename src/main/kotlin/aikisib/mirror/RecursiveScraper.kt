@@ -48,7 +48,7 @@ internal class RecursiveScraperImpl(
     }
 
     private suspend fun doDownloadItem(from: URI) {
-        val originalDescription = downloader.download(from)
+        val originalDescription = downloader.download(from) ?: return
         val links = linkExtractor.extractLinks(originalDescription)
         val filteredLinks = links.filter { fromLinkFilter.filter(it.value) }
         if (filteredLinks.isEmpty()) {

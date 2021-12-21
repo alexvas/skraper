@@ -7,6 +7,7 @@ import mu.KLogging
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.net.URI
+import java.nio.file.Path
 import kotlin.io.path.readText
 
 interface LinkExtractor {
@@ -50,20 +51,29 @@ private class HtmlLinkExtractor(
         val doc: Document = Jsoup.parse(from.readText())
         doc.getElementsByTag("a").forEach {
             val href = it.attr("href")
-            val canonical = try {
-                uriCanonicolizer.canonicalize(rootUri, href)
-            } catch (e: IllegalArgumentException) {
-                logger.warn { "IAE для ссылки '$href' на страничке $from" }
-                null
-            } catch (e: NullPointerException) {
-                logger.warn { "NPE для ссылки '$href' на страничке $from" }
-                null
-            }
-            if (canonical != null)
-                result[href] = canonical
+            result.maybeAdd(href, from)
+        }
+        doc.getElementsByTag("link").forEach {
+            val href = it.attr("href")
+            result.maybeAdd(href, from)
         }
 
         return result
+    }
+
+    private fun MutableMap<String, URI>.maybeAdd(href: String, from: Path) {
+        if (href.isEmpty())
+            return
+        val canonical = try {
+            uriCanonicolizer.canonicalize(rootUri, href)
+        } catch (e: IllegalArgumentException) {
+            logger.warn { "IAE для ссылки '$href' на страничке $from" }
+            null
+        } catch (e: NullPointerException) {
+            logger.warn { "NPE для ссылки '$href' на страничке $from" }
+            null
+        } ?: return
+        this[href] = canonical
     }
 
     companion object : KLogging()
