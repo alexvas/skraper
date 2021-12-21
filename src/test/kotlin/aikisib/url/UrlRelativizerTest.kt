@@ -187,13 +187,15 @@ internal class UrlRelativizerTest {
     @Test
     fun `путь содержит спецсимволы`() {
         // given
+        @Suppress("MaxLineLength")
         val input = URI("https://aikisib.ru/wp-admin/%3Faction%3Dlostpassword%26redirect_to%3Dhttps%3A%2F%2Faikisib%2Eru%2Fprivacy-policy-2%2F.html")
 
         // when
         val relative = sut.relativize(root, input)
 
         // then
-        assertThat(relative.toString()).isEqualTo("wp-admin/%3Faction%3Dlostpassword%26redirect_to%3Dhttps%3A%2F%2Faikisib%2Eru%2Fprivacy-policy-2%2F.html")
+        @Suppress("MaxLineLength")
+        assertThat(relative.toString())
+            .isEqualTo("wp-admin/%3Faction%3Dlostpassword%26redirect_to%3Dhttps%3A%2F%2Faikisib%2Eru%2Fprivacy-policy-2%2F.html")
     }
-
 }

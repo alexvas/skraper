@@ -1,8 +1,8 @@
-@file:Suppress("NonAsciiCharacters", "ClassName")
+@file:Suppress("NonAsciiCharacters", "ClassName", "LocalVariableName")
 
 package aikisib.url
 
-import io.ktor.http.*
+import io.ktor.http.ContentType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -173,7 +173,6 @@ class UrlTransformerHtmlTest {
         }
     }
 
-
     @Nested
     inner class `Html с кириллическим путём` {
 
@@ -193,7 +192,9 @@ class UrlTransformerHtmlTest {
         @Test
         fun `добавляем расширение html`() {
             // given
+            val Ы = "ы".urlEncode()
             val input = canonicolizer.canonicalize(root, "/ы")
+            assertThat(input.rawPath).isEqualTo("/$Ы")
 
             // when
             val result = transform(input)
@@ -246,7 +247,6 @@ class UrlTransformerHtmlTest {
             assertThat(result).isEqualTo(expected)
         }
     }
-
 
     @Nested
     inner class `Html с кириллическими query и путём` {

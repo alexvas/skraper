@@ -24,6 +24,7 @@ internal class LinkExtractorImpl(
     private val uriCanonicolizer: UrlCanonicolizer,
 ) : LinkExtractor {
 
+    @Suppress("TooGenericExceptionCaught", "SwallowedException") // исключения здесь обрабатываются адекватно
     override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
         val result = mutableMapOf<String, URI>()
         val from = originalDescription.localPath

@@ -5,6 +5,8 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.takeFrom
 import io.ktor.http.toURI
 import java.net.URI
+import java.net.URLDecoder
+import kotlin.text.Charsets.UTF_8
 
 /**
  * Сервис для трансляции URL к форме, удобной для локального сохранения.
@@ -43,7 +45,7 @@ internal object UrlTransformerImpl : UrlTransformer {
 
         val shouldBeExt = extensions[contentType]
             ?: error("не определено расширение для URI $input с типом содержимого $contentType")
-        val p = input.path
+        val p = input.rawPath
         val last = p.splitToSequence('/').last()
         return when (last.substringAfterLast('.')) {
             last -> {
@@ -58,27 +60,31 @@ internal object UrlTransformerImpl : UrlTransformer {
 
     private fun URI.addHtmlPathSegment(): URI {
         val segmentToAdd = "?$query".encode() + ".html"
-        val pathSegments = (if (path == "/") listOf("") else path.split('/').map { it.encode() }) + segmentToAdd
-        return withPathSegmentsAndNoQuery(pathSegments)
+        val pathSegments = when (rawPath) {
+            "/" -> SINGLE_EMPTY_SEGMENT_LIST
+            else -> rawPath.split('/')
+                .map { it.reEncode() }
+        }
+        return withPathSegmentsAndNoQuery(pathSegments + segmentToAdd)
     }
 
     private fun URI.appendQueryAndExtension(shouldBeExt: String): URI {
-        val inputSegments = path.split('/')
+        val inputSegments = rawPath.split('/').map { it.reEncode() }
         val last = inputSegments.last()
         val pathSegmentsWoLast: List<String> = inputSegments.toMutableList().also { it.removeLast() }
-        val segmentToBeLast = "$last?$query".encode() + ".$shouldBeExt"
-        val pathSegments = pathSegmentsWoLast.map { it.encode() } + segmentToBeLast
+        val segmentToBeLast = last + "?$query".encode() + ".$shouldBeExt"
+        val pathSegments = pathSegmentsWoLast + segmentToBeLast
         return withPathSegmentsAndNoQuery(pathSegments)
     }
 
     private fun URI.withPathAndNoQuery(path: String): URI {
-        val inputSegments = path.split('/')
+        val inputSegments = path.split('/').map { it.reEncode() }
         val last = inputSegments.last()
         val pathSegmentsWoLast: List<String> = inputSegments.toMutableList().also { it.removeLast() }
         val filename = last.substringBeforeLast('.')
         val ext = last.substringAfterLast('.')
-        val segmentToBeLast = filename.encode() + ".$ext"
-        val pathSegments = pathSegmentsWoLast.map { it.encode() } + segmentToBeLast
+        val segmentToBeLast = "$filename.$ext"
+        val pathSegments = pathSegmentsWoLast + segmentToBeLast
         return withPathSegmentsAndNoQuery(pathSegments)
     }
 
@@ -94,9 +100,9 @@ internal object UrlTransformerImpl : UrlTransformer {
 
     private fun URI.maybeFixExtension(contentType: ContentType): URI {
         val shouldBeExt = extensions[contentType] ?: return this
-        require(!path.isNullOrBlank()) { "канонический URI должен иметь ненулевой путь, а не $this" }
+        require(!rawPath.isNullOrBlank()) { "канонический URI должен иметь ненулевой путь, а не $this" }
 
-        val fixedPath = path.maybeFixExtension(shouldBeExt)
+        val fixedPath = rawPath.maybeFixExtension(shouldBeExt)
         return withPathAndNoQuery(fixedPath)
     }
 
@@ -116,6 +122,14 @@ internal object UrlTransformerImpl : UrlTransformer {
         }
     }
 
+    private fun String.reEncode() =
+        if (this.isEmpty())
+            this
+        else
+            URLDecoder.decode(this, UTF_8).encode()
+
     private fun String.encode() =
         FsEncoder.encode(this)
+
+    private val SINGLE_EMPTY_SEGMENT_LIST = listOf("")
 }

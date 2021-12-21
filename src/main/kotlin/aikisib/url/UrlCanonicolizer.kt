@@ -72,7 +72,7 @@ internal object UrlCanonicolizerImpl : UrlCanonicolizer {
      * Если путь пустой, устанавливаем его в единственный символ '/'.
      */
     private fun URI.withEmptyPathFixed() =
-        if (path.isNullOrEmpty())
+        if (rawPath.isNullOrEmpty())
             withPath("/")
         else
             this
@@ -80,11 +80,20 @@ internal object UrlCanonicolizerImpl : UrlCanonicolizer {
     /**
      * Удаляем завершающий слэш в пути, если такой имеется.
      */
-    private fun URI.withTrailingSlashFixed() =
-        if (path?.endsWith("/") == true)
-            withPath(path.removeSuffix("/"))
-        else
-            this
+    private fun URI.withTrailingSlashFixed(): URI {
+        if (rawPath?.endsWith("/") != true || rawPath == "/")
+            return this
+
+        return URLBuilder().takeFrom(this)
+            .also { urlBuilder ->
+                val segments = urlBuilder.encodedPathSegments
+                val segmentsWoLast = segments.toMutableList()
+                segmentsWoLast.removeLast()
+                urlBuilder.encodedPathSegments = segmentsWoLast
+            }
+            .build()
+            .toURI()
+    }
 }
 
 /**
@@ -110,7 +119,12 @@ internal fun URI.withPath(targetPath: String) =
 
 private fun URI.encodedPathSegments() =
     rawPath.splitToSequence('/')
-        .map {
-            URLDecoder.decode(it, UTF_8).encodeURLPath()
-        }
+        .map { it.reEncode() }
         .toList()
+
+private fun String.reEncode() = if (isEmpty())
+    this
+else
+    URLDecoder.decode(this, UTF_8)
+        .encodeURLPath()
+        .replace("/", "%2F")

@@ -3,7 +3,6 @@
 package aikisib.url
 
 import aikisib.url.UrlTransformerHtmlTest.Companion.AMPERSAND
-import aikisib.url.UrlTransformerHtmlTest.Companion.SLASH
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import org.junit.jupiter.api.Nested
@@ -76,16 +75,27 @@ class UrlCanonicalizationTest {
         }
 
         @Test
-        fun `если слэш кодирован, удаляем его тоже`() {
+        fun `если слэш кодирован, то не удаляем его`() {
             // given
-            val encodedSlash = "/".urlEncode()
-            val input = "$root/$path$encodedSlash"
+            val input = "$root/$path$SLASH"
 
             // when
             val canonical = sut.canonicalize(root, input)
 
             // then
-            assertThat(canonical.rawPath).isEqualTo("/$path")
+            assertThat(canonical.rawPath).isEqualTo("/$path$SLASH")
+        }
+
+        @Test
+        fun `не удаляем кодированный слэш из середины`() {
+            // given
+            val input = "$root/i${SLASH}v"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.rawPath).isEqualTo("/i${SLASH}v")
         }
     }
 
@@ -120,16 +130,15 @@ class UrlCanonicalizationTest {
         }
 
         @Test
-        fun `если слэш кодирован, удаляем его тоже`() {
+        fun `если слэш кодирован, не удаляем его`() {
             // given
-            val encodedSlash = "/".urlEncode()
-            val input = "$root/$path$encodedSlash"
+            val input = "$root/$path$SLASH"
 
             // when
             val canonical = sut.canonicalize(root, input)
 
             // then
-            assertThat(canonical.rawPath).isEqualTo("/$encodedPath")
+            assertThat(canonical.rawPath).isEqualTo("/$encodedPath$SLASH")
         }
     }
 
@@ -147,7 +156,7 @@ class UrlCanonicalizationTest {
             val canonical = sut.canonicalize(root, input)
 
             // then
-            assertThat(canonical.toString()).isEqualTo("$root/i/&")
+            assertThat(canonical.toString()).isEqualTo("$root/i$SLASH&")
         }
 
         @Test
@@ -159,11 +168,11 @@ class UrlCanonicalizationTest {
             val canonical = sut.canonicalize(root, input)
 
             // then
-            assertThat(canonical.toString()).isEqualTo("$root/i/&")
+            assertThat(canonical.toString()).isEqualTo("$root/i$SLASH&")
         }
 
         @Test
-        fun `если слэш кодирован, удаляем его тоже`() {
+        fun `если слэш кодирован, то не удаляем его`() {
             // given
             val input = "$root/$encodedPath$SLASH"
 
@@ -171,7 +180,7 @@ class UrlCanonicalizationTest {
             val canonical = sut.canonicalize(root, input)
 
             // then
-            assertThat(canonical.rawPath).isEqualTo("/i/&")
+            assertThat(canonical.rawPath).isEqualTo("/i$SLASH&$SLASH")
         }
     }
 
@@ -205,16 +214,15 @@ class UrlCanonicalizationTest {
         }
 
         @Test
-        fun `если слэш кодирован, удаляем его тоже`() {
+        fun `если слэш кодирован, то не удаляем его`() {
             // given
-            val encodedSlash = "/".urlEncode()
-            val input = "$root/$encodedPath$encodedSlash"
+            val input = "$root/$encodedPath$SLASH"
 
             // when
             val canonical = sut.canonicalize(root, input)
 
             // then
-            assertThat(canonical.toString()).isEqualTo("$root/$encodedPath")
+            assertThat(canonical.toString()).isEqualTo(input)
         }
     }
 
@@ -249,16 +257,15 @@ class UrlCanonicalizationTest {
         }
 
         @Test
-        fun `если слэш кодирован, удаляем его тоже`() {
+        fun `если слэш кодирован, то не удаляем его`() {
             // given
-            val encodedSlash = "/".urlEncode()
-            val input = "$root/$path$encodedSlash?$query"
+            val input = "$root/$path$SLASH?$query"
 
             // when
             val canonical = sut.canonicalize(root, input)
 
             // then
-            assertThat(canonical.rawPath).isEqualTo("/$path")
+            assertThat(canonical.rawPath).isEqualTo("/$path$SLASH")
         }
     }
 
@@ -293,16 +300,15 @@ class UrlCanonicalizationTest {
         }
 
         @Test
-        fun `если слэш кодирован, удаляем его тоже`() {
+        fun `если слэш кодирован, то не удаляем его`() {
             // given
-            val encodedSlash = "/".urlEncode()
-            val input = "$root/$path$encodedSlash?$query"
+            val input = "$root/$path$SLASH?$query"
 
             // when
             val canonical = sut.canonicalize(root, input)
 
             // then
-            assertThat(canonical.rawPath).isEqualTo("/$path")
+            assertThat(canonical.rawPath).isEqualTo("/$path$SLASH")
         }
     }
 
@@ -341,16 +347,15 @@ class UrlCanonicalizationTest {
             }
 
             @Test
-            fun `если слэш кодирован, удаляем его тоже`() {
+            fun `если слэш кодирован то, не удаляем его`() {
                 // given
-                val encodedSlash = "/".urlEncode()
-                val input = "$root/$path$encodedSlash?$query#$fragment"
+                val input = "$root/$path$SLASH?$query#$fragment"
 
                 // when
                 val canonical = sut.canonicalize(root, input)
 
                 // then
-                assertThat(canonical.rawPath).isEqualTo("/$path")
+                assertThat(canonical.rawPath).isEqualTo("/$path$SLASH")
             }
         }
 
@@ -383,16 +388,15 @@ class UrlCanonicalizationTest {
             }
 
             @Test
-            fun `если слэш кодирован, удаляем его тоже`() {
+            fun `если слэш кодирован, то не удаляем его`() {
                 // given
-                val encodedSlash = "/".urlEncode()
-                val input = "$root/$path$encodedSlash?$query#$fragment"
+                val input = "$root/$path$SLASH?$query#$fragment"
 
                 // when
                 val canonical = sut.canonicalize(root, input)
 
                 // then
-                assertThat(canonical.rawPath).isEqualTo("/$path")
+                assertThat(canonical.rawPath).isEqualTo("/$path$SLASH")
             }
         }
 
@@ -425,16 +429,15 @@ class UrlCanonicalizationTest {
             }
 
             @Test
-            fun `если слэш кодирован, удаляем его тоже`() {
+            fun `если слэш кодирован, то не удаляем его`() {
                 // given
-                val encodedSlash = "/".urlEncode()
-                val input = "$root/$path$encodedSlash?$query#$fragment"
+                val input = "$root/$path$SLASH?$query#$fragment"
 
                 // when
                 val canonical = sut.canonicalize(root, input)
 
                 // then
-                assertThat(canonical.rawPath).isEqualTo("/$path")
+                assertThat(canonical.rawPath).isEqualTo("/$path$SLASH")
             }
         }
 
@@ -537,6 +540,10 @@ class UrlCanonicalizationTest {
                 .withMessageContaining("Результирующий URL ")
                 .withMessageContaining(" невалидный")
         }
+    }
+
+    companion object {
+        val SLASH = "/".urlEncode()
     }
 }
 

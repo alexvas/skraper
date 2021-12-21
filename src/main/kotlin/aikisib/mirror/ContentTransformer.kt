@@ -50,5 +50,5 @@ private class ContentTransformerImpl(
         }
     }
 
-    companion object: KLogging()
+    companion object : KLogging()
 }

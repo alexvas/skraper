@@ -3,7 +3,6 @@ package aikisib.url
 import java.net.URI
 import kotlin.math.min
 
-
 /**
  * Сервис для построения относительных ссылок.
  */

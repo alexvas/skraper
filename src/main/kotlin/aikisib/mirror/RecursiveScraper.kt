@@ -22,6 +22,7 @@ interface RecursiveScraper {
     suspend fun mirror()
 }
 
+@Suppress("LongParameterList")
 internal class RecursiveScraperImpl(
     private val fromRoot: URI,
     private val toRoot: Path,

@@ -6,7 +6,7 @@ import java.nio.CharBuffer
 /**
  * Кодирует части пути URI (то, что между "/") в виде, пригодном для сохранения
  * в файловой системе (NTFS, extX). То, есть, юникодные символы _не_ кодируются.
- * Знаки минус ("-") и подчерка ("_") тоже _не_ кодируются.
+ * Знаки минус ("-"), подчерка ("_") и точки (".") тоже _не_ кодируются.
  */
 object FsEncoder {
 
@@ -30,7 +30,8 @@ object FsEncoder {
         }
     }
 
-    private fun StringBuilder.maybeEncodeAppending(byteBuffer: ByteBuffer) = byteBuffer.forEach { maybeEncodeAppending(it) }
+    private fun StringBuilder.maybeEncodeAppending(byteBuffer: ByteBuffer) =
+        byteBuffer.forEach { maybeEncodeAppending(it) }
 
     private fun StringBuilder.maybeEncodeAppending(it: Byte) {
         when (it) {
@@ -66,6 +67,7 @@ object FsEncoder {
         addAll(('0'..'9'))
         add('-')
         add('_')
+        add('.')
     }.map { it.code.toByte() }
 
     private const val SPACE: Byte = ' '.code.toByte()
