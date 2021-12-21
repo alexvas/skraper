@@ -8,6 +8,7 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.statement.readBytes
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.fileExtensions
@@ -54,7 +55,7 @@ internal class DownloaderImpl : Downloader {
         val contentType = response.contentType()
         check(contentType != null) { "Скачали не пойми что: $from" }
         val hostPrefix = from.host.replace('.', '_')
-        val suffix = response.contentType()?.fileExtensions()?.firstOrNull() ?: "unknown"
+        val suffix = contentType.extension()
 
         val output = withContext(Dispatchers.IO) {
             val outputContent = createTempFile(hostPrefix, ".$suffix")
@@ -70,6 +71,13 @@ internal class DownloaderImpl : Downloader {
             localPath = output.first,
         )
     }
+
+    private fun ContentType.extension(): String =
+        when (this.withoutParameters()) {
+            ContentType.Text.Html -> "html"
+            ContentType.Image.JPEG -> "jpg"
+            else -> this.fileExtensions().firstOrNull() ?: "unknown"
+        }
 
     companion object : KLogging() {
         private const val BYTES_IN_KILOBYTE = 1024
