@@ -5,9 +5,6 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.takeFrom
 import io.ktor.http.toURI
 import java.net.URI
-import java.nio.ByteBuffer
-import java.nio.CharBuffer
-import kotlin.text.Charsets.UTF_8
 
 /**
  * Сервис для трансляции URL к форме, удобной для локального сохранения.
@@ -119,60 +116,6 @@ internal object UrlTransformerImpl : UrlTransformer {
         }
     }
 
-    private fun String.encode(): String {
-        val encoder = UTF_8.newEncoder()
-        val charBuffer = CharBuffer.allocate(SINGLE_UNICODE_CHAR)
-        val byteBuffer = ByteBuffer.allocate(FOUR_BYTES_IN_SINGLE_UNICODE_CHAR_MAX)
-        return buildString {
-            // только двухбайтные символы
-            this@encode.forEach { char ->
-                charBuffer.put(char).flip()
-                val result = encoder.encode(charBuffer, byteBuffer, true)
-                require(!result.isError) { "не получилось закодировать строку ${this@encode} в байты" }
-                when {
-                    byteBuffer.position() != 1 && char.isLetter() -> append(char)
-                    else -> maybeEncodeAppending(byteBuffer)
-                }
-                charBuffer.clear()
-                byteBuffer.clear()
-            }
-        }
-    }
-
-    private fun StringBuilder.maybeEncodeAppending(byteBuffer: ByteBuffer) =
-        byteBuffer.forEach { maybeEncodeAppending(it) }
-
-    private fun StringBuilder.maybeEncodeAppending(it: Byte) {
-        when (it) {
-            SPACE -> append("%20")
-            in URL_ALPHABET -> append(it.toInt().toChar())
-            else -> append(it.percentEncode())
-        }
-    }
-
-    @Suppress("MagicNumber")
-    private fun Byte.percentEncode(): String = buildString(3) {
-        val code = this@percentEncode.toInt() and 0xff
-        append('%')
-        append(hexDigitToChar(code shr 4))
-        append(hexDigitToChar(code and 0x0f))
-    }
-
-    @Suppress("MagicNumber")
-    private fun hexDigitToChar(digit: Int): Char = when (digit) {
-        in 0..9 -> '0' + digit
-        else -> 'A' + digit - 10
-    }
-
-    private fun ByteBuffer.forEach(block: (Byte) -> Unit) {
-        for (counter in 0 until position()) {
-            block(this[counter])
-        }
-    }
-
-    private val URL_ALPHABET = (('a'..'z') + ('A'..'Z') + ('0'..'9')).map { it.code.toByte() }
-
-    private const val SPACE: Byte = ' '.code.toByte()
-    private const val SINGLE_UNICODE_CHAR = 1
-    private const val FOUR_BYTES_IN_SINGLE_UNICODE_CHAR_MAX = 4
+    private fun String.encode() =
+        FsEncoder.encode(this)
 }

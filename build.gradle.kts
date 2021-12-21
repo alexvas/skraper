@@ -48,6 +48,7 @@ dependencies {
     implementation("org.seleniumhq.selenium:selenium-java:$seleniumVersion")
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("commons-validator:commons-validator:1.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 
     // configuration
     implementation("org.aeonbits.owner:owner:1.0.12")

@@ -6,6 +6,8 @@ import io.ktor.http.takeFrom
 import io.ktor.http.toURI
 import org.apache.commons.validator.routines.UrlValidator
 import java.net.URI
+import java.net.URLDecoder
+import kotlin.text.Charsets.UTF_8
 
 /**
  * Сервис для обработки ссылок
@@ -79,7 +81,7 @@ internal object UrlCanonicolizerImpl : UrlCanonicolizer {
      * Удаляем завершающий слэш в пути, если такой имеется.
      */
     private fun URI.withTrailingSlashFixed() =
-        if (path.endsWith("/"))
+        if (path?.endsWith("/") == true)
             withPath(path.removeSuffix("/"))
         else
             this
@@ -106,10 +108,9 @@ internal fun URI.withPath(targetPath: String) =
         fragment,
     )
 
-internal fun URI.encodedPathSegments() =
-    path.encodedPathSegments()
-
-internal fun String.encodedPathSegments() =
-    splitToSequence('/')
-        .map { it.encodeURLPath() }
+private fun URI.encodedPathSegments() =
+    rawPath.splitToSequence('/')
+        .map {
+            URLDecoder.decode(it, UTF_8).encodeURLPath()
+        }
         .toList()

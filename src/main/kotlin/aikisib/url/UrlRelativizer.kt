@@ -26,8 +26,8 @@ internal object UrlRelativizerImpl : UrlRelativizer {
         require(source.host == target.host) { "Хосты различаются. Source: ${source.host}, Target: ${target.host}" }
         require(source.port == target.port) { "Порты различаются. Source: ${source.port}, Target: ${target.port}" }
 
-        val sourcePathSegments = source.encodedPathSegments()
-        val targetPathSegments = target.encodedPathSegments()
+        val sourcePathSegments = source.rawPath.split('/')
+        val targetPathSegments = target.rawPath.split('/')
 
         // пропускаем общие элементы пути
         var index = 0

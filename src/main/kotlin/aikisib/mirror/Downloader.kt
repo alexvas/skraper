@@ -51,6 +51,8 @@ internal class DownloaderImpl : Downloader {
             }
         }
         check(response.status == HttpStatusCode.OK) { "Неверный статус при скачивании $from: ${response.status}" }
+        val contentType = response.contentType()
+        check(contentType != null) { "Скачали не пойми что: $from" }
         val hostPrefix = from.host.replace('.', '_')
         val suffix = response.contentType()?.fileExtensions()?.firstOrNull() ?: "unknown"
 
@@ -63,7 +65,7 @@ internal class DownloaderImpl : Downloader {
 
         return OriginalDescription(
             remoteUri = from,
-            type = response.contentType(),
+            type = contentType.withoutParameters(),
             size = output.second / BYTES_IN_KILOBYTE,
             localPath = output.first,
         )

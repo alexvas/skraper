@@ -12,7 +12,7 @@ wget -mEpnp <какой-то сайт>
 Когда скачаете проект, скопируйте файлы:
 ```
 src/main/resources/main.properties.example
-src/main/resources/sliderRepo.properties.example
+src/main/resources/slider.properties.example
 src/main/resources/vault.properties.example
 ```
 рядом, удалив у них расширение `.example`, и настройте их под свои нужды. После этого сборка проекта

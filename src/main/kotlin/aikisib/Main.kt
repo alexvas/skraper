@@ -1,15 +1,31 @@
 package aikisib
 
+import aikisib.mirror.ContentTransformerFactory
+import aikisib.mirror.ContentTransformerFactoryImpl
+import aikisib.mirror.Downloader
+import aikisib.mirror.DownloaderImpl
+import aikisib.mirror.FromLinkFilter
+import aikisib.mirror.FromLinkFilterImpl
+import aikisib.mirror.LinkExtractor
+import aikisib.mirror.LinkExtractorImpl
 import aikisib.mirror.RecursiveScraper
 import aikisib.mirror.RecursiveScraperImpl
-import aikisib.slider.SliderRepo
+import aikisib.slider.SliderConfig
 import aikisib.slider.SliderRevolutionScraper
 import aikisib.slider.SliderRevolutionScraperImpl
+import aikisib.url.UrlCanonicolizer
+import aikisib.url.UrlCanonicolizerImpl
+import aikisib.url.UrlRelativizer
+import aikisib.url.UrlRelativizerImpl
+import aikisib.url.UrlTransformer
+import aikisib.url.UrlTransformerImpl
 import mu.KLoggable
 import org.aeonbits.owner.Config
 import org.aeonbits.owner.ConfigFactory
 import java.io.File
 import java.lang.Thread.setDefaultUncaughtExceptionHandler
+import java.net.URI
+import kotlin.io.path.Path
 import kotlin.reflect.KClass
 import kotlin.system.exitProcess
 
@@ -21,15 +37,38 @@ suspend fun main() {
     mirrorSite(mainConfig)
 }
 
-suspend fun mirrorSite(sliderRepo: MainConfig) {
-    val recursiveScraper: RecursiveScraper = RecursiveScraperImpl()
-    recursiveScraper.mirror(sliderRepo.publicUrl(), File("/tmp/stockDir"))
+suspend fun mirrorSite(mainConfig: MainConfig) {
+    // Инжекция зависимостей для бедных.
+    val downloader: Downloader = DownloaderImpl()
+    val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
+    val rootUri = canonicolizer.canonicalize(URI("."), mainConfig.publicUrl().toString())
+    val relativizer: UrlRelativizer = UrlRelativizerImpl
+    val transformer: UrlTransformer = UrlTransformerImpl
+    val linkExtractor: LinkExtractor = LinkExtractorImpl(
+        rootUri = rootUri,
+        uriCanonicolizer = canonicolizer,
+    )
+    val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootUri)
+    val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl
+    val recursiveScraper: RecursiveScraper = RecursiveScraperImpl(
+        fromRoot = rootUri,
+        toRoot = Path("/tmp/stockDir"),
+        downloader = downloader,
+        relativizer = relativizer,
+        urlTransformer = transformer,
+        linkExtractor = linkExtractor,
+        fromLinkFilter = fromLinkFilter,
+        contentTransformerFactory = contentTransformerFactory,
+    )
+    // закончили инжектировать зависимости.
+
+    recursiveScraper.mirror()
 }
 
 @Suppress("UnusedPrivateMember")
-private suspend fun exportSliderRevolutionModules(sliderRepo: SliderRepo) {
+private suspend fun exportSliderRevolutionModules(sliderConfig: SliderConfig) {
     val vault: Vault = createConfig(Vault::class)
-    val sliderRevolutionScraper: SliderRevolutionScraper = SliderRevolutionScraperImpl(sliderRepo.adminUrl())
+    val sliderRevolutionScraper: SliderRevolutionScraper = SliderRevolutionScraperImpl(sliderConfig.adminUrl())
 
     val success = sliderRevolutionScraper.loginIntoWordpress(
         wordpressLoginPath = vault.wordpressLoginPath(),
@@ -42,7 +81,7 @@ private suspend fun exportSliderRevolutionModules(sliderRepo: SliderRepo) {
         exitProcess(1)
     }
 
-    sliderRepo.sliderIds().forEach {
+    sliderConfig.sliderIds().forEach {
         val nonce = sliderRevolutionScraper.navigateToSliderRevolutionPage()
         exportModuleToHtml(sliderRevolutionScraper, it, nonce)
     }

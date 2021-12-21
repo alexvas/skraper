@@ -5,8 +5,8 @@ import org.aeonbits.owner.Config.DefaultValue
 import org.aeonbits.owner.Config.Sources
 import java.net.URL
 
-@Sources("classpath:sliderRepo.properties")
-interface SliderRepo : Config {
+@Sources("classpath:slider.properties")
+interface SliderConfig : Config {
 
     /**
      * Корневой URL сайта, где доступна админка

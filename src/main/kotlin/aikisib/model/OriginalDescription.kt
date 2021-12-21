@@ -18,7 +18,7 @@ data class OriginalDescription(
     /**
      * Тип ресурса.
      */
-    val type: ContentType?,
+    val type: ContentType,
 
     /**
      * Размер ресурса в килобайтах.
