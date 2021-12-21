@@ -2,6 +2,7 @@ package aikisib.mirror
 
 import aikisib.model.OriginalDescription
 import aikisib.url.UrlCanonicolizer
+import io.ktor.http.ContentType
 import mu.KLogging
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -20,6 +21,24 @@ interface LinkExtractor {
 }
 
 internal class LinkExtractorImpl(
+    rootUri: URI,
+    uriCanonicolizer: UrlCanonicolizer,
+) : LinkExtractor {
+
+    private val delegates = mapOf<ContentType, LinkExtractor>(
+        ContentType.Text.Html to HtmlLinkExtractor(rootUri, uriCanonicolizer),
+    )
+
+    @Suppress("TooGenericExceptionCaught", "SwallowedException") // исключения здесь обрабатываются адекватно
+    override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
+        val delegate = delegates[originalDescription.type] ?: return emptyMap()
+        return delegate.extractLinks(originalDescription)
+    }
+
+    companion object : KLogging()
+}
+
+private class HtmlLinkExtractor(
     private val rootUri: URI,
     private val uriCanonicolizer: UrlCanonicolizer,
 ) : LinkExtractor {

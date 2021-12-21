@@ -48,9 +48,9 @@ internal object UrlCanonicolizerImpl : UrlCanonicolizer {
     private fun normalize(parent: URI, originalUrl: String): URI {
         val withCanonicalPath = URI.create(originalUrl)
             .normalize()
-            .withTrailingSlashFixed()
         if (withCanonicalPath.isAbsolute)
             return withCanonicalPath
+                .withTrailingSlashFixed()
         require(parent.isAbsolute) { "Родительский путь должен быть абсолютным, а не относительным: $parent" }
         return parent
             .withEmptyPathFixed()

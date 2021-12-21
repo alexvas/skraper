@@ -540,6 +540,18 @@ class UrlCanonicalizationTest {
                 .withMessageContaining("Результирующий URL ")
                 .withMessageContaining(" невалидный")
         }
+
+        @Test
+        fun `относительный путь заканчивается слэшем`() {
+            // given
+            val input = "/nso/"
+
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.rawPath).isEqualTo("/nso")
+        }
     }
 
     companion object {
