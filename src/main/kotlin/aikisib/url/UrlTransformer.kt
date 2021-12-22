@@ -61,7 +61,7 @@ internal object UrlTransformerImpl : UrlTransformer {
     }
 
     private fun URI.addHtmlPathSegment(): URI {
-        val segmentToAdd = "?$query".encode() + ".html"
+        val segmentToAdd = "?$query".fsEncode() + ".html"
         val pathSegments = when (rawPath) {
             "/" -> SINGLE_EMPTY_SEGMENT_LIST
             else -> rawPath.split('/')
@@ -74,7 +74,7 @@ internal object UrlTransformerImpl : UrlTransformer {
         val inputSegments = rawPath.split('/').map { it.reEncode() }
         val last = inputSegments.last()
         val pathSegmentsWoLast: List<String> = inputSegments.toMutableList().also { it.removeLast() }
-        val segmentToBeLast = last + "?$query".encode() + ".$shouldBeExt"
+        val segmentToBeLast = last + "?$query".fsEncode() + ".$shouldBeExt"
         val pathSegments = pathSegmentsWoLast + segmentToBeLast
         return withPathSegmentsAndNoQuery(pathSegments)
     }
@@ -127,6 +127,14 @@ internal object UrlTransformerImpl : UrlTransformer {
             else -> error("Непонятный путь, который не содержит расширений: '$this' для типа $contentType")
         }
     }
+
+    /**
+     * Браузеры скептически относятся к URL-кодированным символам,
+     * поэтому заменяем символ процента на символ подчерка.
+     */
+    private fun String.fsEncode() =
+        encode()
+            .replace('%', '_')
 
     private fun String.reEncode() =
         if (this.isEmpty())
