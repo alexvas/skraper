@@ -66,7 +66,7 @@ internal class RecursiveScraperImpl(
         fanOutRepo[originalDescription] = filteredLinks
 
         for ((_, uri) in filteredLinks) {
-            val prev = linkRepo.put(uri, Unit)
+            val prev = linkRepo.put(uri.woFragment(), Unit)
             val notSeen = prev == null
             if (notSeen)
                 downloadItem(scope, uri)
@@ -111,6 +111,27 @@ internal class RecursiveScraperImpl(
     ) =
         contentTransformerFactory.create(originalDescription, relativeLinks, resolveTarget)
             .transformingMoveFileInPlace()
+
+    /**
+     * Подменяем путь.
+     */
+    internal fun URI.woFragment() =
+        URI(
+            /* scheme = */
+            scheme,
+            /* userInfo = */
+            userInfo,
+            /* host = */
+            host,
+            /* port = */
+            port,
+            /* path = */
+            path,
+            /* query = */
+            query,
+            /* fragment = */
+            null,
+        )
 
     companion object : KLogging()
 }
