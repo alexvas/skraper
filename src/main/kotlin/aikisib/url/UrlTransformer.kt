@@ -33,6 +33,7 @@ internal object UrlTransformerImpl : UrlTransformer {
         ContentType.Text.JavaScript to "js",
         ContentType.Text.Xml to "xml",
         ContentType.Application.Json to "json",
+        ContentType.Application.JavaScript to "js",
         ContentType.Image.JPEG to "jpg",
         ContentType.Image.PNG to "png",
         ContentType.Image.SVG to "svg",

@@ -57,6 +57,10 @@ private class HtmlLinkExtractor(
             val href = it.attr("href")
             result.maybeAdd(href, from)
         }
+        doc.getElementsByTag("script").forEach {
+            val src = it.attr("src")
+            result.maybeAdd(src, from)
+        }
 
         return result
     }
