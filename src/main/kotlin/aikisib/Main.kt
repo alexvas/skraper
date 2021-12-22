@@ -44,10 +44,7 @@ suspend fun mirrorSite(mainConfig: MainConfig) {
     val rootUri = canonicolizer.canonicalize(URI("."), mainConfig.publicUrl().toString())
     val relativizer: UrlRelativizer = UrlRelativizerImpl
     val transformer: UrlTransformer = UrlTransformerImpl
-    val linkExtractor: LinkExtractor = LinkExtractorImpl(
-        rootUri = rootUri,
-        uriCanonicolizer = canonicolizer,
-    )
+    val linkExtractor: LinkExtractor = LinkExtractorImpl(uriCanonicolizer = canonicolizer)
     val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootUri)
     val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl
     val recursiveScraper: RecursiveScraper = RecursiveScraperImpl(

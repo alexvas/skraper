@@ -21,13 +21,11 @@ interface LinkExtractor {
     fun extractLinks(originalDescription: OriginalDescription): Map<String, URI>
 }
 
-internal class LinkExtractorImpl(
-    rootUri: URI,
-    uriCanonicolizer: UrlCanonicolizer,
-) : LinkExtractor {
+internal class LinkExtractorImpl(uriCanonicolizer: UrlCanonicolizer) : LinkExtractor {
 
-    private val delegates = mapOf<ContentType, LinkExtractor>(
-        ContentType.Text.Html to HtmlLinkExtractor(rootUri, uriCanonicolizer),
+    private val delegates: Map<ContentType, LinkExtractor> = mapOf(
+        ContentType.Text.Html to HtmlLinkExtractor(uriCanonicolizer),
+        ContentType.Text.CSS to CssLinkExtractor(uriCanonicolizer),
     )
 
     @Suppress("TooGenericExceptionCaught", "SwallowedException") // исключения здесь обрабатываются адекватно
@@ -39,37 +37,18 @@ internal class LinkExtractorImpl(
     companion object : KLogging()
 }
 
-private class HtmlLinkExtractor(
-    private val rootUri: URI,
+private abstract class LinkExtractorBase(
     private val uriCanonicolizer: UrlCanonicolizer,
-) : LinkExtractor {
+) {
 
     @Suppress("TooGenericExceptionCaught", "SwallowedException") // исключения здесь обрабатываются адекватно
-    override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
-        val result = mutableMapOf<String, URI>()
-        val from = originalDescription.localPath
-        val doc: Document = Jsoup.parse(from.readText())
-        doc.getElementsByTag("a").forEach {
-            val href = it.attr("href")
-            result.maybeAdd(href, from)
-        }
-        doc.getElementsByTag("link").forEach {
-            val href = it.attr("href")
-            result.maybeAdd(href, from)
-        }
-        doc.getElementsByTag("script").forEach {
-            val src = it.attr("src")
-            result.maybeAdd(src, from)
-        }
-
-        return result
-    }
-
-    private fun MutableMap<String, URI>.maybeAdd(href: String, from: Path) {
+    fun MutableMap<String, URI>.maybeAdd(pageUri: URI, href: String, from: Path) {
         if (href.isEmpty())
             return
+        if (href.startsWith("data:"))
+            return
         val canonical = try {
-            uriCanonicolizer.canonicalize(rootUri, href)
+            uriCanonicolizer.canonicalize(pageUri, href)
         } catch (e: IllegalArgumentException) {
             logger.warn { "IAE для ссылки '$href' на страничке $from" }
             null
@@ -81,4 +60,52 @@ private class HtmlLinkExtractor(
     }
 
     companion object : KLogging()
+}
+
+
+private class HtmlLinkExtractor(uriCanonicolizer: UrlCanonicolizer) :
+    LinkExtractorBase(uriCanonicolizer), LinkExtractor {
+
+    override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
+        val result = mutableMapOf<String, URI>()
+        val from = originalDescription.localPath
+        val doc: Document = Jsoup.parse(from.readText())
+        doc.getElementsByTag("a").forEach {
+            val href = it.attr("href")
+            result.maybeAdd(originalDescription.remoteUri, href, from)
+        }
+        doc.getElementsByTag("link").forEach {
+            val href = it.attr("href")
+            result.maybeAdd(originalDescription.remoteUri, href, from)
+        }
+        doc.getElementsByTag("script").forEach {
+            val src = it.attr("src")
+            result.maybeAdd(originalDescription.remoteUri, src, from)
+        }
+
+        return result
+    }
+}
+
+private class CssLinkExtractor(uriCanonicolizer: UrlCanonicolizer) :
+    LinkExtractorBase(uriCanonicolizer), LinkExtractor {
+
+    override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
+        val result = mutableMapOf<String, URI>()
+        val from = originalDescription.localPath
+        val text = from.readText()
+        for (m in urlRegex.findAll(text)) {
+            val link = m.groupValues.asSequence()
+                .drop(1)
+                .filter { it.isNotBlank() }
+                .firstOrNull() ?: continue
+            result.maybeAdd(originalDescription.remoteUri, link, from)
+        }
+        return result
+    }
+
+    companion object {
+        private val urlRegex = Regex("""url\((?:'([^']++)'|"([^"]++)"|([^)]++))\)""")
+    }
+
 }

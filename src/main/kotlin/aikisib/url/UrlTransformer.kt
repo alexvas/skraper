@@ -27,6 +27,8 @@ interface UrlTransformer {
 
 @Suppress("TooManyFunctions")
 internal object UrlTransformerImpl : UrlTransformer {
+    private val VND_MS_FONTOBJECT = ContentType(ContentType.Application.Any.contentType, "vnd.ms-fontobject")
+
     private val extensions = mapOf(
         ContentType.Text.Html to "html",
         ContentType.Text.CSS to "css",
@@ -38,6 +40,8 @@ internal object UrlTransformerImpl : UrlTransformer {
         ContentType.Image.JPEG to "jpg",
         ContentType.Image.PNG to "png",
         ContentType.Image.SVG to "svg",
+        ContentType.Application.FontWoff to "woff",
+        VND_MS_FONTOBJECT to "eot",
     )
 
     override fun transform(contentType: ContentType, input: URI): URI {
@@ -45,8 +49,7 @@ internal object UrlTransformerImpl : UrlTransformer {
         if (query.isNullOrBlank())
             return input.maybeFixExtension(contentType)
 
-        val shouldBeExt = extensions[contentType]
-            ?: error("не определено расширение для URI $input с типом содержимого $contentType")
+        val shouldBeExt = findExtension(contentType, input)
         val p = input.rawPath
         val last = p.splitToSequence('/').last()
         return when (last.substringAfterLast('.')) {
@@ -57,6 +60,25 @@ internal object UrlTransformerImpl : UrlTransformer {
                 input.addHtmlPathSegment()
             }
             else -> input.appendQueryAndExtension(shouldBeExt)
+        }
+    }
+
+    private fun findExtension(contentType: ContentType, input: URI): String {
+        val ext = extensions[contentType]
+        if (ext != null)
+            return ext
+        return when (contentType) {
+            ContentType.Application.OctetStream -> findExtensionForOctetStream(input)
+            else -> error("не определено расширение для URI $input с типом содержимого $contentType")
+        }
+    }
+
+    private fun findExtensionForOctetStream(input: URI): String {
+        val rawPath = input.rawPath
+        return when {
+            rawPath.endsWith(".woff2") -> "woff2"
+            rawPath.endsWith(".ttf") -> "ttf"
+            else -> error("не определено расширение для URI $input с типом содержимого поток октетов")
         }
     }
 

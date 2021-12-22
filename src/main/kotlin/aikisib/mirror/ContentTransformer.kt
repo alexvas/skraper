@@ -1,6 +1,7 @@
 package aikisib.mirror
 
 import aikisib.model.OriginalDescription
+import io.ktor.http.ContentType
 import mu.KLogging
 import java.net.URI
 import java.nio.file.FileSystemException
@@ -40,13 +41,10 @@ private class ContentTransformerImpl(
     override fun transformingMoveFileInPlace() {
         var content = originalDescription.localPath.readText()
         for ((fromLink, toLink) in relativeLinks) {
-            content = content.replace(
-                "'$fromLink'",
-                "'$toLink'",
-            ).replace(
-                """"$fromLink"""",
-                """"$toLink"""",
-            )
+            content = when (originalDescription.type) {
+                ContentType.Text.CSS -> replaceCss(content, fromLink, toLink)
+                else -> replaceEtc(content, fromLink, toLink)
+            }
         }
         target.parent.createDirectories()
         try {
@@ -54,6 +52,29 @@ private class ContentTransformerImpl(
         } catch (e: FileSystemException) {
             logger.warn { "не удалось переместить файл $target: ${e.message}" }
         }
+    }
+
+    private fun replaceCss(content: String, fromLink: String, toLink: URI): String {
+        return content.replace(
+            "url('$fromLink')",
+            "url('$toLink')",
+        ).replace(
+            """url("$fromLink")""",
+            """url("$toLink")""",
+        ).replace(
+            """url($fromLink)""",
+            """url($toLink)""",
+        )
+    }
+
+    private fun replaceEtc(content: String, fromLink: String, toLink: URI): String {
+        return content.replace(
+            "'$fromLink'",
+            "'$toLink'",
+        ).replace(
+            """"$fromLink"""",
+            """"$toLink"""",
+        )
     }
 
     companion object : KLogging()

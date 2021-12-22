@@ -115,7 +115,7 @@ internal class RecursiveScraperImpl(
     /**
      * Подменяем путь.
      */
-    internal fun URI.woFragment() =
+    private fun URI.woFragment() =
         URI(
             /* scheme = */
             scheme,
