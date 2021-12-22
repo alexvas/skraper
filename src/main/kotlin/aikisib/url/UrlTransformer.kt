@@ -34,6 +34,7 @@ internal object UrlTransformerImpl : UrlTransformer {
         ContentType.Text.Xml to "xml",
         ContentType.Application.Json to "json",
         ContentType.Application.JavaScript to "js",
+        ContentType.Application.Rss to "xml",
         ContentType.Image.JPEG to "jpg",
         ContentType.Image.PNG to "png",
         ContentType.Image.SVG to "svg",
@@ -121,7 +122,8 @@ internal object UrlTransformerImpl : UrlTransformer {
     private fun String.addExtension(contentType: ContentType): String {
         return when(contentType) {
             ContentType.Text.Html -> "$this/index.html"
-            ContentType.Application.Json -> "$this.json"
+            ContentType.Application.Json -> "$this/index.json"
+            ContentType.Application.Rss -> "$this/index.xml"
             else -> error("Непонятный путь, который не содержит расширений: '$this' для типа $contentType")
         }
     }
