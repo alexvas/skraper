@@ -554,6 +554,30 @@ class UrlCanonicalizationTest {
         }
     }
 
+    @Test
+    fun `динамический протокол`() {
+        // given
+        val input = "//fonts.googleapis.com/css?family=Montserrat:300,300italic,400,400italic,700,700italic"
+
+        // when
+        val canonical = sut.canonicalize(root, input)
+
+        // then
+        assertThat(canonical.toString()).isEqualTo("https://fonts.googleapis.com/css?family=Montserrat:300,300italic,400,400italic,700,700italic")
+    }
+
+    @Test
+    fun `ссылка по RFC 3986`() {
+        // given
+        val input = "//fonts.googleapis.com/css?family=Montserrat:300,300italic,400,400italic,700,700italic|Oswald:300,300italic,400,400italic,700,700italic|Open+Sans:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext,cyrillic"
+
+        // when
+        val canonical = sut.canonicalize(root, input)
+
+        // then
+        assertThat(canonical.toString()).isEqualTo("https:$input")
+    }
+
     companion object {
         val SLASH = "/".urlEncode()
     }
