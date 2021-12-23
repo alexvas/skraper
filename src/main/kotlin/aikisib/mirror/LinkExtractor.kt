@@ -21,11 +21,14 @@ interface LinkExtractor {
     fun extractLinks(originalDescription: OriginalDescription): Map<String, URI>
 }
 
-internal class LinkExtractorImpl(uriCanonicolizer: UrlCanonicolizer) : LinkExtractor {
+internal class LinkExtractorImpl(
+    uriCanonicolizer: UrlCanonicolizer,
+    forbiddenPrefixes: Set<String>,
+) : LinkExtractor {
 
     private val delegates: Map<ContentType, LinkExtractor> = mapOf(
-        ContentType.Text.Html to HtmlLinkExtractor(uriCanonicolizer),
-        ContentType.Text.CSS to CssLinkExtractor(uriCanonicolizer),
+        ContentType.Text.Html to HtmlLinkExtractor(uriCanonicolizer, forbiddenPrefixes),
+        ContentType.Text.CSS to CssLinkExtractor(uriCanonicolizer, forbiddenPrefixes),
     )
 
     @Suppress("TooGenericExceptionCaught", "SwallowedException") // исключения здесь обрабатываются адекватно
@@ -39,13 +42,16 @@ internal class LinkExtractorImpl(uriCanonicolizer: UrlCanonicolizer) : LinkExtra
 
 private abstract class LinkExtractorBase(
     private val uriCanonicolizer: UrlCanonicolizer,
+    forbiddenPrefixes: Set<String>,
 ) {
+
+    private val ignoredPrefixes = forbiddenPrefixes + IGNORED_PROTOCOL_PREFIXES
 
     @Suppress("TooGenericExceptionCaught", "SwallowedException") // исключения здесь обрабатываются адекватно
     fun MutableMap<String, URI>.maybeAdd(pageUri: URI, href: String, from: Path) {
         if (href.isEmpty())
             return
-        if (IGNORED_PROTOCOL_PREFIXES.any { prefix -> href.startsWith(prefix) })
+        if (ignoredPrefixes.any { prefix -> href.startsWith(prefix) })
             return
         val canonical = try {
             uriCanonicolizer.canonicalize(pageUri, href)
@@ -67,8 +73,10 @@ private abstract class LinkExtractorBase(
     }
 }
 
-private class HtmlLinkExtractor(uriCanonicolizer: UrlCanonicolizer) :
-    LinkExtractorBase(uriCanonicolizer), LinkExtractor {
+private class HtmlLinkExtractor(
+    uriCanonicolizer: UrlCanonicolizer,
+    forbiddenPrefixes: Set<String>,
+) : LinkExtractorBase(uriCanonicolizer, forbiddenPrefixes), LinkExtractor {
 
     override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
         val result = mutableMapOf<String, URI>()
@@ -91,8 +99,10 @@ private class HtmlLinkExtractor(uriCanonicolizer: UrlCanonicolizer) :
     }
 }
 
-private class CssLinkExtractor(uriCanonicolizer: UrlCanonicolizer) :
-    LinkExtractorBase(uriCanonicolizer), LinkExtractor {
+private class CssLinkExtractor(
+    uriCanonicolizer: UrlCanonicolizer,
+    forbiddenPrefixes: Set<String>,
+) : LinkExtractorBase(uriCanonicolizer, forbiddenPrefixes), LinkExtractor {
 
     override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
         val result = mutableMapOf<String, URI>()

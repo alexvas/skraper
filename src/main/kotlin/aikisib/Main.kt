@@ -31,20 +31,25 @@ import kotlin.system.exitProcess
 
 suspend fun main() {
     setDefaultUncaughtExceptionHandler(DefaultUncaughtExceptionHandler())
-    val mainConfig: MainConfig = createConfig(MainConfig::class)
+    val mainConfig = createConfig(MainConfig::class)
+    val vault = createConfig(Vault::class)
 
 //    exportSliderRevolutionModules()
-    mirrorSite(mainConfig)
+    mirrorSite(mainConfig, vault)
 }
 
-suspend fun mirrorSite(mainConfig: MainConfig) {
+suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
     // Инжекция зависимостей для бедных.
     val downloader: Downloader = DownloaderImpl()
     val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
     val rootUri = canonicolizer.canonicalize(URI("."), mainConfig.publicUrl().toString())
     val relativizer: UrlRelativizer = UrlRelativizerImpl
     val transformer: UrlTransformer = UrlTransformerImpl
-    val linkExtractor: LinkExtractor = LinkExtractorImpl(uriCanonicolizer = canonicolizer)
+    val adminUri = canonicolizer.canonicalize(mainConfig.publicUrl().toURI(), vault.wordpressLoginPath())
+    val linkExtractor: LinkExtractor = LinkExtractorImpl(
+        uriCanonicolizer = canonicolizer,
+        forbiddenPrefixes = setOf(adminUri.toString()),
+    )
     val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootUri)
     val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl
     val recursiveScraper: RecursiveScraper = RecursiveScraperImpl(
