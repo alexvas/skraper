@@ -45,7 +45,7 @@ private abstract class LinkExtractorBase(
     fun MutableMap<String, URI>.maybeAdd(pageUri: URI, href: String, from: Path) {
         if (href.isEmpty())
             return
-        if (href.startsWith("data:"))
+        if (IGNORED_PROTOCOL_PREFIXES.any { prefix -> href.startsWith(prefix) })
             return
         val canonical = try {
             uriCanonicolizer.canonicalize(pageUri, href)
@@ -59,9 +59,13 @@ private abstract class LinkExtractorBase(
         this[href] = canonical
     }
 
-    companion object : KLogging()
+    companion object : KLogging() {
+        private val IGNORED_PROTOCOL_PREFIXES = setOf(
+            "data:", // встроенные данные
+            "tel:", // номер телефона
+        )
+    }
 }
-
 
 private class HtmlLinkExtractor(uriCanonicolizer: UrlCanonicolizer) :
     LinkExtractorBase(uriCanonicolizer), LinkExtractor {
