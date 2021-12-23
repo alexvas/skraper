@@ -55,7 +55,7 @@ internal class RecursiveScraperImpl(
 
     private suspend fun doDownloadItem(scope: CoroutineScope, from: URI) {
         val originalDescription = downloader.download(from) ?: return
-        descriptionRepo[originalDescription.remoteUri] = originalDescription
+        descriptionRepo[originalDescription.remoteUri.norm()] = originalDescription
         transformCache[originalDescription] = transform(originalDescription)
         val links = linkExtractor.extractLinks(originalDescription)
         val filteredLinks = links.filter { fromLinkFilter.filter(it.value) }
@@ -66,7 +66,7 @@ internal class RecursiveScraperImpl(
         fanOutRepo[originalDescription] = filteredLinks
 
         for ((_, uri) in filteredLinks) {
-            val prev = linkRepo.put(uri.woFragment(), Unit)
+            val prev = linkRepo.put(uri.norm(), Unit)
             val notSeen = prev == null
             if (notSeen)
                 downloadItem(scope, uri)
@@ -95,7 +95,7 @@ internal class RecursiveScraperImpl(
             transformingMoveFileInPlace(
                 originalDescription = originalDescription,
                 relativeLinks = filteredLinks.mapValues { (_, uri) ->
-                    val targetDescription = descriptionRepo[uri.woFragment()] ?: return@mapValues uri
+                    val targetDescription = descriptionRepo[uri.norm()] ?: return@mapValues uri
                     val transformedLink = transformCache[targetDescription] ?: error("целевая трансформация для $targetDescription не закэширована.")
                     relativizer.relativize(transformedUri, transformedLink, uri.rawFragment)
                 },
@@ -113,9 +113,9 @@ internal class RecursiveScraperImpl(
             .transformingMoveFileInPlace()
 
     /**
-     * Подменяем путь.
+     * Приводим путь к нижнему регистру и зануляем фрагмент.
      */
-    private fun URI.woFragment() =
+    private fun URI.norm() =
         URI(
             /* scheme = */
             scheme,
@@ -126,7 +126,7 @@ internal class RecursiveScraperImpl(
             /* port = */
             port,
             /* path = */
-            path,
+            path?.lowercase(),
             /* query = */
             query,
             /* fragment = */
