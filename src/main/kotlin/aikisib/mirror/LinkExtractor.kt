@@ -81,19 +81,32 @@ private class HtmlLinkExtractor(
 
     override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
         val result = mutableMapOf<String, URI>()
+        val remoteUri = originalDescription.remoteUri
         val from = originalDescription.localPath
         val doc: Document = Jsoup.parse(from.readText())
         doc.getElementsByTag("a").forEach {
             val href = it.attr("href")
-            result.maybeAdd(originalDescription.remoteUri, href, from)
+            result.maybeAdd(remoteUri, href, from)
         }
         doc.getElementsByTag("link").forEach {
             val href = it.attr("href")
-            result.maybeAdd(originalDescription.remoteUri, href, from)
+            result.maybeAdd(remoteUri, href, from)
         }
         doc.getElementsByTag("script").forEach {
             val src = it.attr("src")
-            result.maybeAdd(originalDescription.remoteUri, src, from)
+            result.maybeAdd(remoteUri, src, from)
+        }
+        // вытаскиваем контент Slider revolution:
+        doc.getElementsByTag("rs-slide").forEach {
+            val dataThumb = it.attr("data-thumb")
+            result.maybeAdd(remoteUri, dataThumb, from)
+        }
+        doc.getElementsByTag("img").forEach {
+            val src = it.attr("src")
+            result.maybeAdd(remoteUri, src, from)
+            // вытаскиваем контент Slider revolution:
+            val dataLazyload = it.attr("data-lazyload")
+            result.maybeAdd(remoteUri, dataLazyload, from)
         }
 
         return result
