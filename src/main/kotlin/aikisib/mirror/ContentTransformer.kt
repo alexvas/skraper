@@ -43,6 +43,10 @@ private class ContentTransformerImpl(
         for ((fromLink, toLink) in relativeLinks) {
             content = when (originalDescription.type) {
                 ContentType.Text.CSS -> replaceCss(content, fromLink, toLink)
+                ContentType.Text.Html -> {
+                    val cssReplaced = replaceCss(content, fromLink, toLink)
+                    replaceEtc(cssReplaced, fromLink, toLink)
+                }
                 else -> replaceEtc(content, fromLink, toLink)
             }
         }

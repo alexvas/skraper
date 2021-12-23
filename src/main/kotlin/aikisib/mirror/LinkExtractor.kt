@@ -65,12 +65,30 @@ private abstract class LinkExtractorBase(
         this[href] = canonical
     }
 
+    fun extractLinkFromCssStyle(
+        cssStyle: String?,
+        result: MutableMap<String, URI>,
+        remoteUri: URI,
+        from: Path,
+    ) {
+        if (cssStyle.isNullOrBlank())
+            return
+        for (m in urlRegex.findAll(cssStyle)) {
+            val link = m.groupValues.asSequence()
+                .drop(1)
+                .filter { it.isNotBlank() }
+                .firstOrNull() ?: continue
+            result.maybeAdd(remoteUri, link, from)
+        }
+    }
+
     companion object : KLogging() {
         private val IGNORED_PROTOCOL_PREFIXES = setOf(
             "data:", // встроенные данные
             "tel:", // номер телефона
             "javascript:", // встроенный javascript
         )
+        private val urlRegex = Regex("""url\((?:'([^']++)'|"([^"]++)"|([^)]++))\)""")
     }
 }
 
@@ -112,6 +130,19 @@ private class HtmlLinkExtractor(
             val src = it.attr("src")
             result.maybeAdd(remoteUri, src, from)
         }
+        // <meta name="msapplication-TileImage" content
+        doc.getElementsByTag("meta")
+            .filter { it.attr("name") == "msapplication-TileImage" }
+            .forEach {
+                val content = it.attr("content")
+                result.maybeAdd(remoteUri, content, from)
+            }
+        // <div class="sc_parallax_content" style="background-image:url(https://aikisib.ru/w
+        doc.allElements
+            .forEach {
+                val cssStyle = it.attr("style")
+                extractLinkFromCssStyle(cssStyle, result, remoteUri, from)
+            }
 
         return result
     }
@@ -124,22 +155,12 @@ private class CssLinkExtractor(
 
     override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
         val result = mutableMapOf<String, URI>()
+        val remoteUri = originalDescription.remoteUri
         val from = originalDescription.localPath
-        val text = from.readText()
-        for (m in urlRegex.findAll(text)) {
-            val link = m.groupValues.asSequence()
-                .drop(1)
-                .filter { it.isNotBlank() }
-                .firstOrNull() ?: continue
-            result.maybeAdd(originalDescription.remoteUri, link, from)
-        }
+        val cssStyle = from.readText()
+        extractLinkFromCssStyle(cssStyle, result, remoteUri, from)
         return result
     }
-
-    companion object {
-        private val urlRegex = Regex("""url\((?:'([^']++)'|"([^"]++)"|([^)]++))\)""")
-    }
-
 }
 
 /**
