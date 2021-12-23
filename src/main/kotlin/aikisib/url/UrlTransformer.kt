@@ -28,6 +28,7 @@ interface UrlTransformer {
 @Suppress("TooManyFunctions")
 internal object UrlTransformerImpl : UrlTransformer {
     private val VND_MS_FONTOBJECT = ContentType(ContentType.Application.Any.contentType, "vnd.ms-fontobject")
+    private val VIDEO_WEBM = ContentType(ContentType.Video.Any.contentType, "webm")
 
     private val extensions = mapOf(
         ContentType.Text.Html to "html",
@@ -42,6 +43,7 @@ internal object UrlTransformerImpl : UrlTransformer {
         ContentType.Image.SVG to "svg",
         ContentType.Application.FontWoff to "woff",
         VND_MS_FONTOBJECT to "eot",
+        VIDEO_WEBM to "webm",
     )
 
     override fun transform(contentType: ContentType, input: URI): URI {
@@ -49,41 +51,34 @@ internal object UrlTransformerImpl : UrlTransformer {
         if (query.isNullOrBlank())
             return input.maybeFixExtension(contentType)
 
-        val shouldBeExt = findExtension(contentType, input)
         val p = input.rawPath
+        val shouldBeExt = findExtension(contentType, p)
         val last = p.splitToSequence('/').last()
         return when (last.substringAfterLast('.')) {
-            last -> {
-                require(contentType == ContentType.Text.Html) {
-                    "Непонятный путь, который не содержит расширений: '$p' с типом содержимого $contentType"
-                }
-                input.addHtmlPathSegment()
-            }
+            last -> input.addHtmlPathSegment(shouldBeExt)
             else -> input.appendQueryAndExtension(shouldBeExt)
         }
     }
 
-    private fun findExtension(contentType: ContentType, input: URI): String {
+    private fun findExtension(contentType: ContentType, input: String): String {
         val ext = extensions[contentType]
         if (ext != null)
             return ext
         return when (contentType) {
             ContentType.Application.OctetStream -> findExtensionForOctetStream(input)
-            else -> error("не определено расширение для URI $input с типом содержимого $contentType")
+            else -> error("не определено расширение для пути $input с типом содержимого $contentType")
         }
     }
 
-    private fun findExtensionForOctetStream(input: URI): String {
-        val rawPath = input.rawPath
-        return when {
-            rawPath.endsWith(".woff2") -> "woff2"
-            rawPath.endsWith(".ttf") -> "ttf"
-            else -> error("не определено расширение для URI $input с типом содержимого поток октетов")
+    private fun findExtensionForOctetStream(input: String) =
+        when {
+            input.endsWith(".woff2") -> "woff2"
+            input.endsWith(".ttf") -> "ttf"
+            else -> error("не определено расширение для пути $input с типом содержимого поток октетов")
         }
-    }
 
-    private fun URI.addHtmlPathSegment(): URI {
-        val segmentToAdd = "?$query".fsEncode() + ".html"
+    private fun URI.addHtmlPathSegment(ext: String): URI {
+        val segmentToAdd = "?$query".fsEncode() + ".$ext"
         val pathSegments = when (rawPath) {
             "/" -> SINGLE_EMPTY_SEGMENT_LIST
             else -> rawPath.split('/')
@@ -141,14 +136,8 @@ internal object UrlTransformerImpl : UrlTransformer {
         }
     }
 
-    private fun String.addExtension(contentType: ContentType): String {
-        return when(contentType) {
-            ContentType.Text.Html -> "$this/index.html"
-            ContentType.Application.Json -> "$this/index.json"
-            ContentType.Application.Rss -> "$this/index.xml"
-            else -> error("Непонятный путь, который не содержит расширений: '$this' для типа $contentType")
-        }
-    }
+    private fun String.addExtension(contentType: ContentType) =
+        this + "/index." + findExtension(contentType, this)
 
     /**
      * Браузеры скептически относятся к URL-кодированным символам,

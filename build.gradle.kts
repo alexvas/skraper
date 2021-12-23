@@ -2,7 +2,7 @@ import kotlin.text.Charsets.UTF_8
 
 plugins {
     // kotlin support
-    kotlin("jvm") version "1.6.0"
+    kotlin("jvm") version "1.6.10"
     // linters
     id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
     id("io.gitlab.arturbosch.detekt") version "1.18.1"
@@ -66,7 +66,7 @@ dependencies {
     // logging facade
     implementation("io.github.microutils:kotlin-logging:2.1.16")
     runtimeOnly("org.slf4j:jul-to-slf4j:1.7.32")
-    runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.16.0")
+    runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.17.0")
     runtimeOnly("ch.qos.logback:logback-classic:1.2.9")
 
     val junitVersion = "5.8.2"
@@ -75,6 +75,6 @@ dependencies {
 
     // рантаймовая зависимость на реализацию логирования slf4j для тестов
     testRuntimeOnly("org.slf4j:jul-to-slf4j:1.7.32")
-    testRuntimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.16.0")
-    testRuntimeOnly("ch.qos.logback:logback-classic:1.2.8")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.17.0")
+    testRuntimeOnly("ch.qos.logback:logback-classic:1.2.9")
 }

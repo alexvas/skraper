@@ -69,6 +69,7 @@ private abstract class LinkExtractorBase(
         private val IGNORED_PROTOCOL_PREFIXES = setOf(
             "data:", // встроенные данные
             "tel:", // номер телефона
+            "javascript:", // встроенный javascript
         )
     }
 }
@@ -122,4 +123,37 @@ private class CssLinkExtractor(
         private val urlRegex = Regex("""url\((?:'([^']++)'|"([^"]++)"|([^)]++))\)""")
     }
 
+}
+
+/**
+ * Из Json можно (при желании) кучу мусора вытащить наружу.
+ * Всё работает без него. Комментирую этот класс.
+ */
+@Suppress("unused")
+private class JsonLinkExtractor(
+    uriCanonicolizer: UrlCanonicolizer,
+    forbiddenPrefixes: Set<String>,
+    rootUri: URI,
+) : LinkExtractorBase(uriCanonicolizer, forbiddenPrefixes), LinkExtractor {
+
+    private val rootUriPrefixRegex: Regex
+
+    init {
+        val rootUriPrefix = rootUri.toString()
+            .removeSuffix("/")
+            .replace("/", "\\/")
+        rootUriPrefixRegex = Regex("""(\Q${rootUriPrefix}\E[^")<' ]++)""")
+    }
+
+    override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
+        val result = mutableMapOf<String, URI>()
+        val from = originalDescription.localPath
+        val text = from.readText()
+        for (m in rootUriPrefixRegex.findAll(text)) {
+            val link = m.groupValues[1].replace("\\/", "/")
+                .removeSuffix("\\")
+            result.maybeAdd(originalDescription.remoteUri, link, from)
+        }
+        return result
+    }
 }
