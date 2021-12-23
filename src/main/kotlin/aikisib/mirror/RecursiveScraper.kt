@@ -81,7 +81,7 @@ internal class RecursiveScraperImpl(
 
     private fun resolveTarget(originalDescription: OriginalDescription): Path {
         val transformed = transformCache[originalDescription] ?: error("трансформация для $originalDescription не закэширована.")
-        val relative = relativizer.relativize(fromRoot, transformed)
+        val relative = relativizer.relativize(fromRoot, transformed, transformed.rawFragment)
         return toRoot.resolve(relative.toString())
     }
 
@@ -95,9 +95,9 @@ internal class RecursiveScraperImpl(
             transformingMoveFileInPlace(
                 originalDescription = originalDescription,
                 relativeLinks = filteredLinks.mapValues { (_, uri) ->
-                    val targetDescription = descriptionRepo[uri] ?: return@mapValues uri
+                    val targetDescription = descriptionRepo[uri.woFragment()] ?: return@mapValues uri
                     val transformedLink = transformCache[targetDescription] ?: error("целевая трансформация для $targetDescription не закэширована.")
-                    relativizer.relativize(transformedUri, transformedLink)
+                    relativizer.relativize(transformedUri, transformedLink, uri.rawFragment)
                 },
                 resolveTarget = resolveTarget(originalDescription),
             )

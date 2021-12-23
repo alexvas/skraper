@@ -68,6 +68,7 @@ object FsEncoder {
         add('-')
         add('_')
         add('.')
+        add('=')
     }.map { it.code.toByte() }
 
     private const val SPACE: Byte = ' '.code.toByte()

@@ -13,6 +13,9 @@ internal class UrlRelativizerTest {
     private val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
     private val sut: UrlRelativizer = UrlRelativizerImpl
 
+    private fun relativize(source: URI, target: URI) =
+        sut.relativize(source, target, target.rawFragment)
+
     @Nested
     inner class `путь отсутствует` {
 
@@ -23,7 +26,7 @@ internal class UrlRelativizerTest {
             val target = canonicolizer.canonicalize(root, "/plugin/somePlugin/css/someStyle.css")
 
             // when
-            val relative = sut.relativize(source, target)
+            val relative = relativize(source, target)
 
             // then
             assertThat(relative.toString()).isEqualTo("plugin/somePlugin/css/someStyle.css")
@@ -36,7 +39,7 @@ internal class UrlRelativizerTest {
             val target = canonicolizer.canonicalize(root, "#down")
 
             // when
-            val relative = sut.relativize(source, target)
+            val relative = relativize(source, target)
 
             // then
             assertThat(relative.toString()).isEqualTo("#down")
@@ -53,7 +56,7 @@ internal class UrlRelativizerTest {
             val target = canonicolizer.canonicalize(root, "/plugin/somePlugin/css/font/someFont.wolf2")
 
             // when
-            val relative = sut.relativize(source, target)
+            val relative = relativize(source, target)
 
             // then
             assertThat(relative.toString()).isEqualTo("font/someFont.wolf2")
@@ -66,7 +69,7 @@ internal class UrlRelativizerTest {
             val target = canonicolizer.canonicalize(root, "/plugin/somePlugin/font/someFont.wolf2")
 
             // when
-            val relative = sut.relativize(source, target)
+            val relative = relativize(source, target)
 
             // then
             assertThat(relative.toString()).isEqualTo("../font/someFont.wolf2")
@@ -79,7 +82,7 @@ internal class UrlRelativizerTest {
             val target = canonicolizer.canonicalize(root, "/plugin2.html")
 
             // when
-            val relative = sut.relativize(source, target)
+            val relative = relativize(source, target)
 
             // then
             assertThat(relative.toString()).isEqualTo("plugin2.html")
@@ -92,7 +95,7 @@ internal class UrlRelativizerTest {
             val target = canonicolizer.canonicalize(root, "/timetable#c=d")
 
             // when
-            val relative = sut.relativize(source, target)
+            val relative = relativize(source, target)
 
             // then
             assertThat(relative.toString()).isEqualTo("#c=d")
@@ -112,7 +115,7 @@ internal class UrlRelativizerTest {
             val target = canonicolizer.canonicalize(root, "/$encodedPath/somePlugin/css/font/someFont.wolf2")
 
             // when
-            val relative = sut.relativize(source, target)
+            val relative = relativize(source, target)
 
             // then
             assertThat(relative.toString()).isEqualTo("font/someFont.wolf2")
@@ -125,7 +128,7 @@ internal class UrlRelativizerTest {
             val target = canonicolizer.canonicalize(root, "/$encodedPath/somePlugin/css/$encodedPath/someFont.wolf2")
 
             // when
-            val relative = sut.relativize(source, target)
+            val relative = relativize(source, target)
 
             // then
             assertThat(relative.toString()).isEqualTo("$encodedPath/someFont.wolf2")
@@ -138,7 +141,7 @@ internal class UrlRelativizerTest {
             val target = canonicolizer.canonicalize(root, "/$encodedPath/somePlugin/font/someFont.wolf2")
 
             // when
-            val relative = sut.relativize(source, target)
+            val relative = relativize(source, target)
 
             // then
             assertThat(relative.toString()).isEqualTo("../font/someFont.wolf2")
@@ -151,7 +154,7 @@ internal class UrlRelativizerTest {
             val target = canonicolizer.canonicalize(root, "/$encodedPath/somePlugin/$encodedPath/someFont.wolf2")
 
             // when
-            val relative = sut.relativize(source, target)
+            val relative = relativize(source, target)
 
             // then
             assertThat(relative.toString()).isEqualTo("../$encodedPath/someFont.wolf2")
@@ -164,7 +167,7 @@ internal class UrlRelativizerTest {
             val target = canonicolizer.canonicalize(root, "/$encodedPath.html")
 
             // when
-            val relative = sut.relativize(source, target)
+            val relative = relativize(source, target)
 
             // then
             assertThat(relative.toString()).isEqualTo("$encodedPath.html")
@@ -177,7 +180,7 @@ internal class UrlRelativizerTest {
             val target = canonicolizer.canonicalize(root, "/$encodedPath#c=d")
 
             // when
-            val relative = sut.relativize(source, target)
+            val relative = relativize(source, target)
 
             // then
             assertThat(relative.toString()).isEqualTo("#c=d")
@@ -191,7 +194,7 @@ internal class UrlRelativizerTest {
         val input = URI("https://aikisib.ru/wp-admin/%3Faction%3Dlostpassword%26redirect_to%3Dhttps%3A%2F%2Faikisib%2Eru%2Fprivacy-policy-2%2F.html")
 
         // when
-        val relative = sut.relativize(root, input)
+        val relative = relativize(root, input)
 
         // then
         @Suppress("MaxLineLength")

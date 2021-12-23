@@ -14,12 +14,12 @@ interface UrlRelativizer {
      * @param source - откуда ссылаются.
      * @param target - ссылка на элемент.
      */
-    fun relativize(source: URI, target: URI): URI
+    fun relativize(source: URI, target: URI, rawFragment: String?): URI
 }
 
 internal object UrlRelativizerImpl : UrlRelativizer {
 
-    override fun relativize(source: URI, target: URI): URI {
+    override fun relativize(source: URI, target: URI, rawFragment: String?): URI {
         require(source.isAbsolute) { "URL источника должен быть абсолютным, а не $source" }
         require(target.isAbsolute) { "Целевой URL должен быть абсолютным, а не $target" }
         require(source.host == target.host) { "Хосты различаются. Source: ${source.host}, Target: ${target.host}" }
@@ -48,7 +48,7 @@ internal object UrlRelativizerImpl : UrlRelativizer {
             ++index
         }
 
-        return relativeUri(resultChunks, target.query, target.fragment)
+        return relativeUri(resultChunks, target.query, rawFragment)
     }
 
     private fun relativeUri(
