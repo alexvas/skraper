@@ -108,6 +108,10 @@ private class HtmlLinkExtractor(
             val dataLazyload = it.attr("data-lazyload")
             result.maybeAdd(remoteUri, dataLazyload, from)
         }
+        doc.getElementsByTag("video").forEach {
+            val src = it.attr("src")
+            result.maybeAdd(remoteUri, src, from)
+        }
 
         return result
     }
