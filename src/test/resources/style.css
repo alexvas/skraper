@@ -1,0 +1,31 @@
+/* 14. Predefined classes for users
+-------------------------------------------------------------- */
+.texture_bg_green,
+.texture_bg_dark {
+    background-image: url(https://aikisib.ru/wp-content/themes/runcrew/images/bg_dark.jpg);
+}
+
+.texture_bg_blue,
+.texture_bg_light {
+    background-image: url(https://aikisib.ru/wp-content/themes/runcrew/images/bg_light.jpg);
+}
+
+.texture_bg_yellow {
+    background-image: url(https://aikisib.ru/wp-content/themes/runcrew/images/bg_yellow.jpg);
+}
+
+.texture_bg_slider:after,
+.texture_bg_slider_full:after {
+    content: ' ';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    z-index: 1;
+    background: url(https://aikisib.ru/wp-content/themes/runcrew/images/texture_top.png) center top repeat-x, url(https://aikisib.ru/wp-content/themes/runcrew/images/texture_slider.png) left top repeat;
+}
+
+.texture_bg_slider_full:after {
+    background: url(https://aikisib.ru/wp-content/themes/runcrew/images/texture_center.png) center center no-repeat, url(https://aikisib.ru/wp-content/themes/runcrew/images/texture_top.png) center top repeat-x, url(https://aikisib.ru/wp-content/themes/runcrew/images/texture_slider.png) left top repeat;
+}

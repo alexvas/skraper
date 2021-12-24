@@ -65,30 +65,12 @@ private abstract class LinkExtractorBase(
         this[href] = canonical
     }
 
-    fun extractLinkFromCssStyle(
-        cssStyle: String?,
-        result: MutableMap<String, URI>,
-        remoteUri: URI,
-        from: Path,
-    ) {
-        if (cssStyle.isNullOrBlank())
-            return
-        for (m in urlRegex.findAll(cssStyle)) {
-            val link = m.groupValues.asSequence()
-                .drop(1)
-                .filter { it.isNotBlank() }
-                .firstOrNull() ?: continue
-            result.maybeAdd(remoteUri, link, from)
-        }
-    }
-
     companion object : KLogging() {
         private val IGNORED_PROTOCOL_PREFIXES = setOf(
             "data:", // встроенные данные
             "tel:", // номер телефона
             "javascript:", // встроенный javascript
         )
-        private val urlRegex = Regex("""url\((?:'([^']++)'|"([^"]++)"|([^)]++))\)""")
     }
 }
 
@@ -143,7 +125,9 @@ private class HtmlLinkExtractor(
         doc.allElements
             .forEach {
                 val cssStyle = it.attr("style")
-                extractLinkFromCssStyle(cssStyle, result, remoteUri, from)
+                cssStyle.extractLinks().forEach { link ->
+                    result.maybeAdd(remoteUri, link, from)
+                }
             }
 
         return result
@@ -160,10 +144,27 @@ private class CssLinkExtractor(
         val remoteUri = originalDescription.remoteUri
         val from = originalDescription.localPath
         val cssStyle = from.readText()
-        extractLinkFromCssStyle(cssStyle, result, remoteUri, from)
+        cssStyle.extractLinks().forEach { link ->
+            result.maybeAdd(remoteUri, link, from)
+        }
         return result
     }
 }
+
+internal fun String?.extractLinks() =
+    if (isNullOrBlank())
+        sequenceOf()
+    else
+        urlRegex.findAll(this).asSequence()
+            .map { m ->
+                m.groupValues.asSequence()
+                    .drop(1)
+                    .filter { it.isNotBlank() }
+                    .firstOrNull()
+            }
+            .filterNotNull()
+
+private val urlRegex = Regex("""url\((?:'([^']++)'|"([^"]++)"|([^)]++))\)""")
 
 /**
  * Из Json можно (при желании) кучу мусора вытащить наружу.

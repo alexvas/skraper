@@ -93,14 +93,17 @@ internal class RecursiveScraperImpl(
             for ((originalDescription, filteredLinks: Map<String, URI>) in fanOutRepo) {
                 val transformedUri = transformCache[originalDescription] ?: error("трансформация для $originalDescription не закэширована.")
 
-                launch {
+                launch(Dispatchers.Default) {
                     transformingMoveFileInPlace(
                         originalDescription = originalDescription,
-                        relativeLinks = filteredLinks.mapValues { (_, uri) ->
-                            val targetDescription = descriptionRepo[uri.norm()] ?: return@mapValues uri
-                            val transformedLink = transformCache[targetDescription] ?: error("целевая трансформация для $targetDescription не закэширована.")
-                            relativizer.relativize(transformedUri, transformedLink, uri.rawFragment)
-                        },
+                        relativeLinks = filteredLinks.asSequence()
+                            .map { (link, uri) ->
+                                val targetDescription = descriptionRepo[uri.norm()] ?: return@map null
+                                val transformedLink = transformCache[targetDescription] ?: error("целевая трансформация для $targetDescription не закэширована.")
+                                link to relativizer.relativize(transformedUri, transformedLink, uri.rawFragment)
+                            }
+                            .filterNotNull()
+                            .toMap(),
                         resolveTarget = resolveTarget(originalDescription),
                     )
                 }

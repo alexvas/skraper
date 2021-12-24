@@ -7,11 +7,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class NonceTest {
-    private val page = "slider_revolution_page.html"
-    private fun pageIs() = ClassLoader.getSystemClassLoader().getResourceAsStream(page) ?: error("$page not found")
-    private val content: String = pageIs().use {
-        it.reader().use { reader -> reader.readText() }
-    }
+    private val content = readResourceContent("slider_revolution_page.html")
 
     @Test
     fun `находим nonce в сорцах странички`() {
@@ -30,5 +26,12 @@ class NonceTest {
         check(result != null)
         assertThat(result.groupValues.size).isEqualTo(2)
         assertThat(result.groupValues[1]).containsPattern("[a-z0-9]+")
+    }
+}
+
+fun readResourceContent(fileName: String): String {
+    val pageIs = ClassLoader.getSystemClassLoader().getResourceAsStream(fileName) ?: error("$fileName not found")
+    return pageIs.use {
+        it.reader().use { reader -> reader.readText() }
     }
 }

@@ -51,7 +51,7 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
         forbiddenPrefixes = setOf(adminUri.toString()),
     )
     val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootUri)
-    val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl
+    val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(rootUri)
     val recursiveScraper: RecursiveScraper = RecursiveScraperImpl(
         fromRoot = rootUri,
         toRoot = Path("/tmp/stockDir"),
