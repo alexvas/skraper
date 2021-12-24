@@ -3,6 +3,8 @@ package aikisib.mirror
 import aikisib.model.OriginalDescription
 import io.ktor.http.ContentType
 import mu.KLogging
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import java.net.URI
 import java.nio.file.FileSystemException
 import java.nio.file.Path
@@ -45,7 +47,8 @@ private class ContentTransformerImpl(
                 ContentType.Text.CSS -> replaceCss(content, fromLink, toLink)
                 ContentType.Text.Html -> {
                     val cssReplaced = replaceCss(content, fromLink, toLink)
-                    replaceEtc(cssReplaced, fromLink, toLink)
+                    val etcReplaced = replaceEtc(cssReplaced, fromLink, toLink)
+                    fixDom(etcReplaced)
                 }
                 else -> replaceEtc(content, fromLink, toLink)
             }
@@ -56,6 +59,26 @@ private class ContentTransformerImpl(
         } catch (e: FileSystemException) {
             logger.warn { "не удалось переместить файл $target: ${e.message}" }
         }
+    }
+
+    private fun fixDom(input: String): String {
+        val doc: Document = Jsoup.parse(input)
+        doc.getElementsByTag("link")
+            .asSequence()
+            .filter {
+                it.attr("rel") in listOf("canonical", "shortlink", "alternate", "pingback", "EditURI")
+            }
+            .forEach { it.remove() }
+        doc.getElementsByTag("form")
+            .asSequence()
+            .filter { it.attr("name") == "login_form" }
+            .forEach { it.remove() }
+        doc.getElementsByTag("div")
+            .asSequence()
+            .filter { it.attr("class") == "login" }
+            .forEach { it.remove() }
+
+        return doc.toString()
     }
 
     private fun replaceCss(content: String, fromLink: String, toLink: URI): String {

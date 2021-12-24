@@ -105,6 +105,8 @@ private class HtmlLinkExtractor(
         doc.getElementsByTag("a").forEach {
             val href = it.attr("href")
             result.maybeAdd(remoteUri, href, from)
+            val dataThumb = it.attr("data-thumb")
+            result.maybeAdd(remoteUri, dataThumb, from)
         }
         doc.getElementsByTag("link").forEach {
             val href = it.attr("href")

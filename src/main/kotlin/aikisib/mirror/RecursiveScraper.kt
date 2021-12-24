@@ -88,19 +88,23 @@ internal class RecursiveScraperImpl(
     private fun transform(originalDescription: OriginalDescription) =
         urlTransformer.transform(originalDescription.type, originalDescription.remoteUri)
 
-    private fun moveContentTransforming() {
-        for ((originalDescription, filteredLinks: Map<String, URI>) in fanOutRepo) {
-            val transformedUri = transformCache[originalDescription] ?: error("трансформация для $originalDescription не закэширована.")
+    private suspend fun moveContentTransforming() {
+        coroutineScope {
+            for ((originalDescription, filteredLinks: Map<String, URI>) in fanOutRepo) {
+                val transformedUri = transformCache[originalDescription] ?: error("трансформация для $originalDescription не закэширована.")
 
-            transformingMoveFileInPlace(
-                originalDescription = originalDescription,
-                relativeLinks = filteredLinks.mapValues { (_, uri) ->
-                    val targetDescription = descriptionRepo[uri.norm()] ?: return@mapValues uri
-                    val transformedLink = transformCache[targetDescription] ?: error("целевая трансформация для $targetDescription не закэширована.")
-                    relativizer.relativize(transformedUri, transformedLink, uri.rawFragment)
-                },
-                resolveTarget = resolveTarget(originalDescription),
-            )
+                launch {
+                    transformingMoveFileInPlace(
+                        originalDescription = originalDescription,
+                        relativeLinks = filteredLinks.mapValues { (_, uri) ->
+                            val targetDescription = descriptionRepo[uri.norm()] ?: return@mapValues uri
+                            val transformedLink = transformCache[targetDescription] ?: error("целевая трансформация для $targetDescription не закэширована.")
+                            relativizer.relativize(transformedUri, transformedLink, uri.rawFragment)
+                        },
+                        resolveTarget = resolveTarget(originalDescription),
+                    )
+                }
+            }
         }
     }
 
