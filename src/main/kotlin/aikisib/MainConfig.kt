@@ -11,4 +11,13 @@ interface MainConfig : Config {
      * Корневой URL публичного сайта.
      */
     fun publicUrl(): URL
+
+    /**
+     * Ненужные для зеркалирования префиксы
+     */
+    fun forbiddenPrefixes(): List<String>
+    /**
+     * Ненужные для зеркалирования суффиксы
+     */
+    fun forbiddenSuffixes(): List<String>
 }

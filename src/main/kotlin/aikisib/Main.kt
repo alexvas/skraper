@@ -45,10 +45,17 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
     val rootUri = canonicolizer.canonicalize(URI("."), mainConfig.publicUrl().toString())
     val relativizer: UrlRelativizer = UrlRelativizerImpl
     val transformer: UrlTransformer = UrlTransformerImpl
-    val adminUri = canonicolizer.canonicalize(rootUri, vault.wordpressLoginPath())
+    val forbiddenPrefixes = (mainConfig.forbiddenPrefixes() + vault.wordpressLoginPath())
+        .map { canonicolizer.canonicalize(rootUri, it.trim()).toString() }
+        .toSet()
+    val forbiddenSuffixes = mainConfig.forbiddenSuffixes()
+        .map { canonicolizer.canonicalize(rootUri, it.trim()).toString() }
+        .toSet()
+
     val linkExtractor: LinkExtractor = LinkExtractorImpl(
         uriCanonicolizer = canonicolizer,
-        forbiddenPrefixes = setOf(adminUri.toString()),
+        forbiddenPrefixes = forbiddenPrefixes,
+        forbiddenSuffixes = forbiddenSuffixes,
     )
     val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootUri)
     val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(rootUri)
