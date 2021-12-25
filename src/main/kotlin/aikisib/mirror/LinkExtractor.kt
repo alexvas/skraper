@@ -41,6 +41,7 @@ internal class LinkExtractorImpl(
     companion object : KLogging()
 }
 
+@Suppress("UnnecessaryAbstractClass")
 private abstract class LinkExtractorBase(
     private val uriCanonicolizer: UrlCanonicolizer,
     ignoredPrefixes: Set<String>,
@@ -53,7 +54,8 @@ private abstract class LinkExtractorBase(
         "." + it.removePrefix(".")
     }
 
-    @Suppress("TooGenericExceptionCaught", "SwallowedException") // исключения здесь обрабатываются адекватно
+    // исключения здесь обрабатываются адекватно
+    @Suppress("TooGenericExceptionCaught", "SwallowedException", "ReturnCount")
     fun MutableMap<String, URI>.maybeAdd(pageUri: URI, href: String, from: Path) {
         if (href.isEmpty())
             return
@@ -205,7 +207,7 @@ private class JsonLinkExtractor(
         val rootUriPrefix = rootUri.toString()
             .removeSuffix("/")
             .replace("/", "\\/")
-        rootUriPrefixRegex = Regex("""(\Q${rootUriPrefix}\E[^")<' ]++)""")
+        rootUriPrefixRegex = Regex("""(\Q$rootUriPrefix\E[^")<' ]++)""")
     }
 
     override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {

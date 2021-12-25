@@ -1,4 +1,4 @@
-@file:Suppress("NonAsciiCharacters", "ClassName", "LocalVariableName")
+@file:Suppress("NonAsciiCharacters", "ClassName", "LocalVariableName", "ObjectPropertyName")
 
 package aikisib.url
 
@@ -65,7 +65,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}${QUESTION}a.html")
+            val expected = URI("${root}${_QUESTION}a.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -79,7 +79,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}i/${QUESTION}a.html")
+            val expected = URI("${root}i/${_QUESTION}a.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -93,7 +93,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}i/${QUESTION}f${AMPERSAND}g.html")
+            val expected = URI("${root}i/${_QUESTION}f${_AMPERSAND}g.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -107,7 +107,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}i/${QUESTION}foo${EQUALS}t${AMPERSAND}bar${EQUALS}u.html")
+            val expected = URI("${root}i/${_QUESTION}foo=t${_AMPERSAND}bar=u.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -125,7 +125,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}${QUESTION}ы.html")
+            val expected = URI("${root}${_QUESTION}ы.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -139,7 +139,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}i/${QUESTION}ы.html")
+            val expected = URI("${root}i/${_QUESTION}ы.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -153,7 +153,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}i/${QUESTION}ы${AMPERSAND}э.html")
+            val expected = URI("${root}i/${_QUESTION}ы${_AMPERSAND}э.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -167,7 +167,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}i/${QUESTION}ы${EQUALS}t${AMPERSAND}э${EQUALS}u.html")
+            val expected = URI("${root}i/${_QUESTION}ы=t${_AMPERSAND}э=u.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -214,7 +214,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}ы/${QUESTION}a.html")
+            val expected = URI("${root}ы/${_QUESTION}a.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -228,7 +228,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}ы/${QUESTION}f${AMPERSAND}g.html")
+            val expected = URI("${root}ы/${_QUESTION}f${_AMPERSAND}g.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -242,7 +242,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}ы/${QUESTION}foo${EQUALS}t${AMPERSAND}bar${EQUALS}u.html")
+            val expected = URI("${root}ы/${_QUESTION}foo=t${_AMPERSAND}bar=u.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -260,7 +260,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}ф/${QUESTION}ы.html")
+            val expected = URI("${root}ф/${_QUESTION}ы.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -274,7 +274,7 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}ф/${QUESTION}ы${AMPERSAND}э.html")
+            val expected = URI("${root}ф/${_QUESTION}ы${_AMPERSAND}э.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
@@ -288,16 +288,16 @@ class UrlTransformerHtmlTest {
             val result = transform(input)
 
             // then
-            val expected = URI("${root}ф/${QUESTION}ы${EQUALS}t${AMPERSAND}э${EQUALS}u.html")
+            val expected = URI("${root}ф/${_QUESTION}ы=t${_AMPERSAND}э=u.html")
             assertThat(result.toString()).isEqualTo("$expected")
             assertThat(result).isEqualTo(expected)
         }
     }
 
     companion object {
-        val QUESTION = "?".urlEncode()
-        val EQUALS = "=".urlEncode()
-        val SLASH = "/".urlEncode()
+        private val QUESTION = "?".urlEncode()
+        private val _QUESTION = QUESTION.replace('%', '_')
         val AMPERSAND = "&".urlEncode()
+        private val _AMPERSAND = AMPERSAND.replace('%', '_')
     }
 }

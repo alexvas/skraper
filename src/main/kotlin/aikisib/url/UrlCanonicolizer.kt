@@ -35,7 +35,7 @@ internal object UrlCanonicolizerImpl : UrlCanonicolizer {
      * @return ссылка в канонической форме.
      */
     override fun canonicalize(parent: URI, originalUrl: String): URI {
-        val input = normalize(parent, originalUrl)
+        val input = normalize(parent, fixRfc3986(originalUrl))
         return URLBuilder().takeFrom(input)
             .also { urlBuilder ->
                 urlBuilder.encodedPathSegments = input.encodedPathSegments()
@@ -44,6 +44,9 @@ internal object UrlCanonicolizerImpl : UrlCanonicolizer {
             .toURI()
             .validated()
     }
+
+    private fun fixRfc3986(href: String) =
+        href.replace("|", "%7C")
 
     private fun normalize(parent: URI, originalUrl: String): URI {
         val withCanonicalPath = URI.create(originalUrl)

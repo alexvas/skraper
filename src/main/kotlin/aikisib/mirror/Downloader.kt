@@ -48,6 +48,7 @@ internal class DownloaderImpl(
         }
     }
 
+    @Suppress("ReturnCount")
     override suspend fun download(from: URI): OriginalDescription? {
         val response = client.get {
             url {
@@ -61,7 +62,6 @@ internal class DownloaderImpl(
         val contentType = response.contentType()
         check(contentType != null) { "Скачали не пойми что: $from" }
         if (contentType.withoutParameters() in ignoredContentTypes) {
-            logger.info { "игнорируем $ignoredContentTypes для $from" }
             return null
         }
         val hostPrefix = from.host.replace('.', '_')
