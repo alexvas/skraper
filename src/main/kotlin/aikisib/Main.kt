@@ -19,6 +19,7 @@ import aikisib.url.UrlRelativizer
 import aikisib.url.UrlRelativizerImpl
 import aikisib.url.UrlTransformer
 import aikisib.url.UrlTransformerImpl
+import io.ktor.http.ContentType
 import mu.KLoggable
 import org.aeonbits.owner.Config
 import org.aeonbits.owner.ConfigFactory
@@ -40,22 +41,24 @@ suspend fun main() {
 
 suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
     // Инжекция зависимостей для бедных.
-    val downloader: Downloader = DownloaderImpl()
+    val downloader: Downloader = DownloaderImpl(
+        ignoredContentTypes = mainConfig.ignoredContentTypes().map { ContentType.parse(it) }.toSet(),
+    )
     val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
     val rootUri = canonicolizer.canonicalize(URI("."), mainConfig.publicUrl().toString())
     val relativizer: UrlRelativizer = UrlRelativizerImpl
     val transformer: UrlTransformer = UrlTransformerImpl
-    val forbiddenPrefixes = (mainConfig.forbiddenPrefixes() + vault.wordpressLoginPath())
+    val ignoredPrefixes = (mainConfig.ignoredPrefixes() + vault.wordpressLoginPath())
         .map { canonicolizer.canonicalize(rootUri, it.trim()).toString() }
         .toSet()
-    val forbiddenSuffixes = mainConfig.forbiddenSuffixes()
+    val ignoredSuffixes = mainConfig.ignoredSuffixes()
         .map { canonicolizer.canonicalize(rootUri, it.trim()).toString() }
         .toSet()
 
     val linkExtractor: LinkExtractor = LinkExtractorImpl(
         uriCanonicolizer = canonicolizer,
-        forbiddenPrefixes = forbiddenPrefixes,
-        forbiddenSuffixes = forbiddenSuffixes,
+        ignoredPrefixes = ignoredPrefixes,
+        ignoredSuffixes = ignoredSuffixes,
     )
     val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootUri)
     val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(rootUri)

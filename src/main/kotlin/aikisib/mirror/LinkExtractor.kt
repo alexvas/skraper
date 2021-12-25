@@ -23,13 +23,13 @@ interface LinkExtractor {
 
 internal class LinkExtractorImpl(
     uriCanonicolizer: UrlCanonicolizer,
-    forbiddenPrefixes: Set<String>,
-    forbiddenSuffixes: Set<String>,
+    ignoredPrefixes: Set<String>,
+    ignoredSuffixes: Set<String>,
 ) : LinkExtractor {
 
     private val delegates: Map<ContentType, LinkExtractor> = mapOf(
-        ContentType.Text.Html to HtmlLinkExtractor(uriCanonicolizer, forbiddenPrefixes, forbiddenSuffixes),
-        ContentType.Text.CSS to CssLinkExtractor(uriCanonicolizer, forbiddenPrefixes, forbiddenSuffixes),
+        ContentType.Text.Html to HtmlLinkExtractor(uriCanonicolizer, ignoredPrefixes, ignoredSuffixes),
+        ContentType.Text.CSS to CssLinkExtractor(uriCanonicolizer, ignoredPrefixes, ignoredSuffixes),
     )
 
     @Suppress("TooGenericExceptionCaught", "SwallowedException") // исключения здесь обрабатываются адекватно
@@ -43,12 +43,12 @@ internal class LinkExtractorImpl(
 
 private abstract class LinkExtractorBase(
     private val uriCanonicolizer: UrlCanonicolizer,
-    forbiddenPrefixes: Set<String>,
-    forbiddenSuffixes: Set<String>,
+    ignoredPrefixes: Set<String>,
+    ignoredSuffixes: Set<String>,
 ) {
 
-    private val ignoredPrefixes = forbiddenPrefixes + IGNORED_PROTOCOL_PREFIXES
-    private val forbiddenSuffixes = forbiddenSuffixes.map {
+    private val ignoredPrefixes = ignoredPrefixes + IGNORED_PROTOCOL_PREFIXES
+    private val ignoredSuffixes = ignoredSuffixes.map {
         // гарантируем, что расширение начинается с точки
         "." + it.removePrefix(".")
     }
@@ -59,7 +59,7 @@ private abstract class LinkExtractorBase(
             return
         if (ignoredPrefixes.any { prefix -> href.startsWith(prefix) })
             return
-        if (forbiddenSuffixes.any { suffix -> href.endsWith(suffix) })
+        if (ignoredSuffixes.any { suffix -> href.endsWith(suffix) })
             return
         val canonical = try {
             uriCanonicolizer.canonicalize(pageUri, href)
@@ -84,9 +84,9 @@ private abstract class LinkExtractorBase(
 
 private class HtmlLinkExtractor(
     uriCanonicolizer: UrlCanonicolizer,
-    forbiddenPrefixes: Set<String>,
-    forbiddenSuffixes: Set<String>,
-) : LinkExtractorBase(uriCanonicolizer, forbiddenPrefixes, forbiddenSuffixes), LinkExtractor {
+    ignoredPrefixes: Set<String>,
+    ignoredSuffixes: Set<String>,
+) : LinkExtractorBase(uriCanonicolizer, ignoredPrefixes, ignoredSuffixes), LinkExtractor {
 
     override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
         val result = mutableMapOf<String, URI>()
@@ -156,9 +156,9 @@ private class HtmlLinkExtractor(
 
 private class CssLinkExtractor(
     uriCanonicolizer: UrlCanonicolizer,
-    forbiddenPrefixes: Set<String>,
-    forbiddenSuffixes: Set<String>,
-) : LinkExtractorBase(uriCanonicolizer, forbiddenPrefixes, forbiddenSuffixes), LinkExtractor {
+    ignoredPrefixes: Set<String>,
+    ignoredSuffixes: Set<String>,
+) : LinkExtractorBase(uriCanonicolizer, ignoredPrefixes, ignoredSuffixes), LinkExtractor {
 
     override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
         val result = mutableMapOf<String, URI>()
@@ -194,10 +194,10 @@ private val urlRegex = Regex("""url\((?:'([^']++)'|"([^"]++)"|([^)]++))\)""")
 @Suppress("unused")
 private class JsonLinkExtractor(
     uriCanonicolizer: UrlCanonicolizer,
-    forbiddenPrefixes: Set<String>,
-    forbiddenSuffixes: Set<String>,
+    ignoredPrefixes: Set<String>,
+    ignoredSuffixes: Set<String>,
     rootUri: URI,
-) : LinkExtractorBase(uriCanonicolizer, forbiddenPrefixes, forbiddenSuffixes), LinkExtractor {
+) : LinkExtractorBase(uriCanonicolizer, ignoredPrefixes, ignoredSuffixes), LinkExtractor {
 
     private val rootUriPrefixRegex: Regex
 

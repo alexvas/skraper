@@ -32,7 +32,9 @@ interface Downloader {
     suspend fun download(from: URI): OriginalDescription?
 }
 
-internal class DownloaderImpl : Downloader {
+internal class DownloaderImpl(
+    private val ignoredContentTypes: Set<ContentType>,
+) : Downloader {
 
     private val client = HttpClient(CIO) {
         expectSuccess = false
@@ -58,6 +60,10 @@ internal class DownloaderImpl : Downloader {
         }
         val contentType = response.contentType()
         check(contentType != null) { "Скачали не пойми что: $from" }
+        if (contentType.withoutParameters() in ignoredContentTypes) {
+            logger.info { "игнорируем $ignoredContentTypes для $from" }
+            return null
+        }
         val hostPrefix = from.host.replace('.', '_')
         val suffix = contentType.extension()
 

@@ -15,9 +15,15 @@ interface MainConfig : Config {
     /**
      * Ненужные для зеркалирования префиксы
      */
-    fun forbiddenPrefixes(): List<String>
+    fun ignoredPrefixes(): List<String>
+
     /**
      * Ненужные для зеркалирования суффиксы
      */
-    fun forbiddenSuffixes(): List<String>
+    fun ignoredSuffixes(): List<String>
+
+    /**
+     * Ненужные для зеркалирования типы содержимого
+     */
+    fun ignoredContentTypes(): List<String>
 }
