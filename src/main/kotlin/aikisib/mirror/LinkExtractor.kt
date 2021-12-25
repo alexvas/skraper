@@ -118,6 +118,17 @@ private class HtmlLinkExtractor(
             // вытаскиваем контент Slider revolution:
             val dataLazyload = it.attr("data-lazyload")
             result.maybeAdd(remoteUri, dataLazyload, from)
+            // вытаскиваем контент странички "о нас"
+            val srcset = it.attr("srcset")
+            if (!srcset.isNullOrBlank()) {
+                srcset.splitToSequence(',')
+                    .map { input ->
+                        input.trim().split(' ')[0]
+                    }
+                    .forEach { input ->
+                        result.maybeAdd(remoteUri, input, from)
+                    }
+            }
         }
         doc.getElementsByTag("video").forEach {
             val src = it.attr("src")

@@ -5,6 +5,7 @@ import io.ktor.http.ContentType
 import mu.KLogging
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 import java.net.URI
 import java.nio.file.FileSystemException
 import java.nio.file.Path
@@ -60,7 +61,7 @@ private class ContentTransformerImpl(
         }
         when (originalDescription.type) {
             ContentType.Text.Html -> {
-                content = fixDom(content)
+                content = fixDom(content, relativeLinks)
                 content = content
                     .replace(ajaxEscapedRootUri, "")
 //                    .replace(rootUriStr, "")
@@ -75,7 +76,7 @@ private class ContentTransformerImpl(
         }
     }
 
-    private fun fixDom(input: String): String {
+    private fun fixDom(input: String, relativeLinks: Map<String, URI>): String {
         val doc: Document = Jsoup.parse(input)
         doc.getElementsByTag("link")
             .asSequence()
@@ -98,8 +99,40 @@ private class ContentTransformerImpl(
                 !innerHtml.isNullOrEmpty() && innerHtml.contains(ajaxEscapedRootUri)
             }
             .forEach { it.remove() }
+        doc.getElementsByTag("img")
+            .asSequence()
+            .filter {
+                val srcset = it.attr("srcset")
+                !srcset.isNullOrBlank()
+            }
+            .forEach { img ->
+                val srcset = img.attr("srcset")
+                val result = srcset.splitToSequence(',')
+                    .map { chunk -> replaceSrcSetChunkLinks(img, chunk.trim(), relativeLinks) }
+                    .joinToString(separator = ", ")
+                img.attr("srcset", result)
+            }
 
         return doc.toString()
+    }
+
+    private fun replaceSrcSetChunkLinks(
+        img: Element,
+        srcSetChunk: String,
+        relativeLinks: Map<String, URI>,
+    ): String {
+        val chunks = srcSetChunk.split(' ')
+        val currentLink = chunks[0]
+        val marker = chunks[1]
+        var target: URI? = null
+        for ((sourceLink, targetUri) in relativeLinks) {
+            if (sourceLink == currentLink) {
+                target = targetUri
+                break
+            }
+        }
+        check(target != null) { "не найдена ссылка на замену $currentLink в srcset для $img" }
+        return "$target $marker"
     }
 
     private fun replaceCss(content: String, fromLink: String, toLink: URI): String = content.replace(
