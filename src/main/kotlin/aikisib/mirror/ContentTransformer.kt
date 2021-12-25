@@ -64,7 +64,7 @@ private class ContentTransformerImpl(
                 content = fixDom(content, relativeLinks)
                 content = content
                     .replace(ajaxEscapedRootUri, "")
-//                    .replace(rootUriStr, "")
+                    .replace(rootUriStr, "")
             }
             else -> {}
         }
@@ -91,13 +91,6 @@ private class ContentTransformerImpl(
         doc.getElementsByTag("div")
             .asSequence()
             .filter { it.attr("class") == "login" }
-            .forEach { it.remove() }
-        doc.getElementsByTag("script")
-            .asSequence()
-            .filter {
-                val innerHtml = it.html()
-                !innerHtml.isNullOrEmpty() && innerHtml.contains(ajaxEscapedRootUri)
-            }
             .forEach { it.remove() }
         doc.getElementsByTag("img")
             .asSequence()
