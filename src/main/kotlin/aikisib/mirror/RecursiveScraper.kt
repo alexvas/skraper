@@ -41,9 +41,11 @@ internal class RecursiveScraperImpl(
     private val fanOutRepo: MutableMap<OriginalDescription, Map<String, URI>> = ConcurrentHashMap()
 
     override suspend fun mirror() {
+        logger.info { "Скачиваем копию сайта локально на диск" }
         coroutineScope {
             downloadItem(this, fromRoot)
         }
+        logger.info { "Трансформируем содержимое: меняем ссылки на локальные." }
         moveContentTransforming()
     }
 

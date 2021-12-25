@@ -3,7 +3,7 @@
 publicUrl=https://aikisib.ru
 
 # Ненужные для зеркалирования префиксы. Разделитель списка -- запятая.
-ignoredPrefixes = /comments, /wp-json, /wp-admin
+ignoredPrefixes = /comments, /wp-json, /wp-admin, /xmlrpc
 
 # Ненужные для зеркалирования суффиксы. Разделитель списка -- запятая.
 ignoredSuffixes = xml

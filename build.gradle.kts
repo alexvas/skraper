@@ -68,6 +68,7 @@ dependencies {
     runtimeOnly("org.slf4j:jul-to-slf4j:1.7.32")
     runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.17.0")
     runtimeOnly("ch.qos.logback:logback-classic:1.2.9")
+    runtimeOnly("org.fusesource.jansi:jansi:2.4.0")
 
     val junitVersion = "5.8.2"
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
@@ -77,4 +78,5 @@ dependencies {
     testRuntimeOnly("org.slf4j:jul-to-slf4j:1.7.32")
     testRuntimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.17.0")
     testRuntimeOnly("ch.qos.logback:logback-classic:1.2.9")
+    testRuntimeOnly("org.fusesource.jansi:jansi:2.4.0")
 }
