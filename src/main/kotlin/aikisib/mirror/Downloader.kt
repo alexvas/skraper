@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KLogging
 import java.net.URI
+import java.nio.file.Path
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeBytes
 
@@ -33,6 +34,7 @@ interface Downloader {
 }
 
 internal class DownloaderImpl(
+    private val tempPath: Path,
     private val ignoredContentTypes: Set<ContentType>,
 ) : Downloader {
 
@@ -68,7 +70,7 @@ internal class DownloaderImpl(
         val suffix = contentType.extension()
 
         val output = withContext(Dispatchers.IO) {
-            val outputContent = createTempFile(hostPrefix, ".$suffix")
+            val outputContent = createTempFile(tempPath, hostPrefix, ".$suffix")
             val buffer = response.readBytes()
             outputContent.writeBytes(buffer)
             outputContent to buffer.size

@@ -3,6 +3,7 @@ package aikisib.mirror
 import aikisib.model.OriginalDescription
 import aikisib.url.UrlRelativizer
 import aikisib.url.UrlTransformer
+import io.ktor.http.ContentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -11,8 +12,9 @@ import mu.KLogging
 import java.net.URI
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
-import kotlin.io.path.moveTo
+import kotlin.io.path.name
 
 interface RecursiveScraper {
 
@@ -27,12 +29,15 @@ interface RecursiveScraper {
 internal class RecursiveScraperImpl(
     private val fromRoot: URI,
     private val toRoot: Path,
+    private val toRootWebp: Path,
     private val downloader: Downloader,
     private val relativizer: UrlRelativizer,
     private val urlTransformer: UrlTransformer,
     private val linkExtractor: LinkExtractor,
     private val fromLinkFilter: FromLinkFilter,
     private val contentTransformerFactory: ContentTransformerFactory,
+    private val webpEncoder: WebpEncoder,
+    private val athropos: Athropos,
 ) : RecursiveScraper {
     private val linkRepo: MutableMap<URI, Unit> = ConcurrentHashMap()
 
@@ -47,6 +52,8 @@ internal class RecursiveScraperImpl(
         }
         logger.info { "Трансформируем содержимое: меняем ссылки на локальные." }
         moveContentTransforming()
+        logger.info { "Генерируем копии изображений в формате WebP." }
+        makeWebPCopy(toRootWebp)
     }
 
     private suspend fun downloadItem(scope: CoroutineScope, from: URI) {
@@ -62,7 +69,7 @@ internal class RecursiveScraperImpl(
         val links = linkExtractor.extractLinks(originalDescription)
         val filteredLinks = links.filter { fromLinkFilter.filter(it.value) }
         if (filteredLinks.isEmpty()) {
-            moveFileInPlace(originalDescription)
+            copyFile(originalDescription)
             return
         }
         fanOutRepo[originalDescription] = filteredLinks
@@ -75,10 +82,10 @@ internal class RecursiveScraperImpl(
         }
     }
 
-    private fun moveFileInPlace(originalDescription: OriginalDescription) {
+    private fun copyFile(originalDescription: OriginalDescription) {
         val target = resolveTarget(originalDescription)
         target.parent.createDirectories()
-        originalDescription.localPath.moveTo(target, overwrite = true)
+        originalDescription.localPath.copyTo(target, overwrite = true)
     }
 
     private fun resolveTarget(originalDescription: OriginalDescription): Path {
@@ -145,5 +152,23 @@ internal class RecursiveScraperImpl(
             null,
         )
 
-    companion object : KLogging()
+    private fun makeWebPCopy(toRoot: Path) {
+        for ((originalDescription, transformed) in transformCache) {
+            if (originalDescription.type !in IMAGES_TO_BE_CONVERTED)
+                continue
+            val relative = relativizer.relativize(fromRoot, transformed, null)
+            val targetPath = toRoot.resolve(relative.toString())
+            targetPath.parent.createDirectories()
+            val targetPathWithExtension = targetPath.parent.resolve(targetPath.name + ".webp")
+            webpEncoder.encode(originalDescription, targetPathWithExtension)
+            athropos.removeIfLarger(originalDescription.localPath, targetPathWithExtension)
+        }
+    }
+
+    companion object : KLogging() {
+        private val IMAGES_TO_BE_CONVERTED = listOf(
+            ContentType.Image.JPEG,
+            ContentType.Image.PNG,
+        )
+    }
 }

@@ -1,5 +1,7 @@
 package aikisib
 
+import aikisib.mirror.Athropos
+import aikisib.mirror.AthroposImpl
 import aikisib.mirror.ContentTransformerFactory
 import aikisib.mirror.ContentTransformerFactoryImpl
 import aikisib.mirror.Downloader
@@ -10,6 +12,8 @@ import aikisib.mirror.LinkExtractor
 import aikisib.mirror.LinkExtractorImpl
 import aikisib.mirror.RecursiveScraper
 import aikisib.mirror.RecursiveScraperImpl
+import aikisib.mirror.WebpEncoder
+import aikisib.mirror.WebpEncoderImpl
 import aikisib.slider.SliderConfig
 import aikisib.slider.SliderRevolutionScraper
 import aikisib.slider.SliderRevolutionScraperImpl
@@ -26,7 +30,8 @@ import org.aeonbits.owner.ConfigFactory
 import java.io.File
 import java.lang.Thread.setDefaultUncaughtExceptionHandler
 import java.net.URI
-import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.deleteIfExists
 import kotlin.reflect.KClass
 import kotlin.system.exitProcess
 
@@ -40,8 +45,22 @@ suspend fun main() {
 }
 
 suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
+    val mirrorDir = mainConfig.mirrorDir()
+    if (mirrorDir.exists())
+        mirrorDir.deleteRecursively()
+    val mirrorPath = mirrorDir.toPath()
+    mirrorPath.deleteIfExists()
+    mirrorPath.createDirectories()
+    val toRoot = mirrorPath.resolve(mainConfig.publicUrl().host.toString().replace('.', '_'))
+    toRoot.createDirectories()
+    val toRootWebp = mirrorPath.resolve("webp")
+    toRootWebp.createDirectories()
+    val tempPath = mainConfig.tempDir().toPath()
+    tempPath.createDirectories()
+
     // Инжекция зависимостей для бедных.
     val downloader: Downloader = DownloaderImpl(
+        tempPath = tempPath,
         ignoredContentTypes = mainConfig.ignoredContentTypes().map { ContentType.parse(it) }.toSet(),
     )
     val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
@@ -62,15 +81,20 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
     )
     val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootUri)
     val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(rootUri)
+    val webpEncoder: WebpEncoder = WebpEncoderImpl(mainConfig.cwebpExecutable())
+    val athropos: Athropos = AthroposImpl
     val recursiveScraper: RecursiveScraper = RecursiveScraperImpl(
         fromRoot = rootUri,
-        toRoot = Path("/tmp/stockDir"),
+        toRoot = toRoot,
+        toRootWebp = toRootWebp,
         downloader = downloader,
         relativizer = relativizer,
         urlTransformer = transformer,
         linkExtractor = linkExtractor,
         fromLinkFilter = fromLinkFilter,
         contentTransformerFactory = contentTransformerFactory,
+        webpEncoder = webpEncoder,
+        athropos = athropos,
     )
     // закончили инжектировать зависимости.
 

@@ -21,3 +21,19 @@ src/main/resources/vault.properties.example
 ./gradlew check assemble
 ```
 должна проходить.
+
+Вдобавок к зеркалированию сайта изображения `.jpg` и `.png` оттуда дополнительно сохраняются в формате 
+`.wepb`. Для этого в настройках надо указать путь к 
+[гугловой утилите `cwebp`](https://developers.google.com/speed/webp/docs/precompiled) для 
+конвертирования изображений.
+
+## Запуск
+Производится либо вызовом
+```shell
+./gradlew run
+```
+либо созданием дистрибутива
+```shell
+./gradlew distTar
+```
+смотри результат в `build/distributions` и запуска скрипта из распакованного архива.

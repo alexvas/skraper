@@ -10,3 +10,13 @@ ignoredSuffixes = xml
 
 # Ненужные для зеркалирования типы содержимого. Разделитель списка -- запятая.
 ignoredContentTypes = application/rss+xml
+
+# Путь к утилите cwebp.
+cwebpExecutable = /bin/cwebp
+
+# Путь ко временной директории для скачиваемых файлов.
+tempDir = /tmp/aikisib_input
+
+# Путь к целевой директории, куда сохранять зеркалируемые файлы.
+# Директория очищается вначале работы приложения.
+mirrorDir = /tmp/aikisib_mirror

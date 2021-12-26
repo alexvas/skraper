@@ -6,6 +6,7 @@ import io.github.bonigarcia.wdm.WebDriverManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
@@ -13,6 +14,7 @@ import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeOptions
 import java.io.File
 
+@Disabled
 class WdmTest {
     lateinit var driver: WebDriver
     private val wdm: WebDriverManager = WebDriverManager.chromedriver().browserInDocker()
@@ -29,16 +31,6 @@ class WdmTest {
     @AfterEach
     fun teardown() {
         wdm.quit()
-    }
-
-    @Test
-    fun test() {
-        // Exercise
-        driver["https://bonigarcia.dev/selenium-webdriver-java/"]
-        val title = driver.title
-
-        // Verify
-        assertThat(title).contains("Selenium WebDriver")
     }
 
     private val homePageUrl = "https://aikisib.ru"
