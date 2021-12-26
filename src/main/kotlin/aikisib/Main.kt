@@ -53,7 +53,7 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
     mirrorPath.createDirectories()
     val toRoot = mirrorPath.resolve(mainConfig.publicUrl().host.toString().replace('.', '_'))
     toRoot.createDirectories()
-    val toRootWebp = mirrorPath.resolve("webp")
+    val toRootWebp = toRoot.resolve("webp")
     toRootWebp.createDirectories()
     val tempPath = mainConfig.tempDir().toPath()
     tempPath.createDirectories()
