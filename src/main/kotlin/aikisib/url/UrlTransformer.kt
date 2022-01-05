@@ -29,6 +29,8 @@ interface UrlTransformer {
 internal object UrlTransformerImpl : UrlTransformer {
     private val VND_MS_FONTOBJECT = ContentType(ContentType.Application.Any.contentType, "vnd.ms-fontobject")
     private val VIDEO_WEBM = ContentType(ContentType.Video.Any.contentType, "webm")
+    private val FONT_WOFF = ContentType("font", "woff")
+    private val FONT_WOFF2 = ContentType("font", "woff2")
 
     private val extensions = mapOf(
         ContentType.Text.Html to "html",
@@ -44,6 +46,8 @@ internal object UrlTransformerImpl : UrlTransformer {
         ContentType.Application.FontWoff to "woff",
         VND_MS_FONTOBJECT to "eot",
         VIDEO_WEBM to "webm",
+        FONT_WOFF to "woff",
+        FONT_WOFF2 to "woff2",
     )
 
     override fun transform(contentType: ContentType, input: URI): URI {
