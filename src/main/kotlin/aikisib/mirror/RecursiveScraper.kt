@@ -25,9 +25,10 @@ interface RecursiveScraper {
     suspend fun mirror()
 }
 
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 internal class RecursiveScraperImpl(
     private val fromRoot: URI,
+    private val fromAliases: List<URI>,
     private val toRoot: Path,
     private val toRootWebp: Path,
     private val downloader: Downloader,
@@ -46,7 +47,7 @@ internal class RecursiveScraperImpl(
     private val fanOutRepo: MutableMap<OriginalDescription, Map<String, URI>> = ConcurrentHashMap()
 
     override suspend fun mirror() {
-        logger.info { "Скачиваем копию сайта локально на диск" }
+        logger.info { "Скачиваем копию сайта локально на диск $toRoot" }
         coroutineScope {
             downloadItem(this, fromRoot)
         }
@@ -63,12 +64,14 @@ internal class RecursiveScraperImpl(
     }
 
     private suspend fun doDownloadItem(scope: CoroutineScope, from: URI) {
-        val originalDescription = downloader.download(from) ?: return
+        val deAliased: URI = from.deAlias()
+        val originalDescription = downloader.download(deAliased) ?: return
         descriptionRepo[originalDescription.remoteUri.norm()] = originalDescription
         transformCache[originalDescription] = transform(originalDescription)
-        val links = linkExtractor.extractLinks(originalDescription)
-        val filteredLinks = links.filter { fromLinkFilter.filter(it.value) }
+        val links: Map<String, URI> = linkExtractor.extractLinks(originalDescription)
+        val filteredLinks: Map<String, URI> = links.mapNotNull { fromLinkFilter.filter(it.key, it.value) }.toMap()
         if (filteredLinks.isEmpty()) {
+            // страничка не требует трансформации, достаточно просто её скопировать.
             copyFile(originalDescription)
             return
         }
@@ -136,19 +139,13 @@ internal class RecursiveScraperImpl(
      */
     private fun URI.norm() =
         URI(
-            /* scheme = */
             scheme,
-            /* userInfo = */
             userInfo,
-            /* host = */
             host,
-            /* port = */
             port,
-            /* path = */
             path?.lowercase(),
-            /* query = */
             query,
-            /* fragment = */
+            /* зануляем фрагмент */
             null,
         )
 
@@ -163,6 +160,26 @@ internal class RecursiveScraperImpl(
             webpEncoder.encode(originalDescription, targetPathWithExtension)
             athropos.removeIfLarger(originalDescription.localPath, targetPathWithExtension)
         }
+    }
+
+    @Suppress("ComplexCondition")
+    private fun URI.deAlias(): URI {
+        fromAliases.forEach { alias ->
+            // различия в схеме игнорируем
+            if (host == alias.host && port == alias.port && userInfo == alias.userInfo) {
+                // подменяем псевдоним на основной URI
+                return URI(
+                    fromRoot.scheme,
+                    fromRoot.userInfo,
+                    fromRoot.host,
+                    fromRoot.port,
+                    path,
+                    query,
+                    fragment,
+                )
+            }
+        }
+        return this
     }
 
     companion object : KLogging() {

@@ -4,7 +4,6 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.encodeURLPath
 import io.ktor.http.takeFrom
 import io.ktor.http.toURI
-import org.apache.commons.validator.routines.UrlValidator
 import java.net.URI
 import java.net.URLDecoder
 import kotlin.text.Charsets.UTF_8
@@ -25,7 +24,6 @@ interface UrlCanonicolizer {
 }
 
 internal object UrlCanonicolizerImpl : UrlCanonicolizer {
-    private val urlValidator = UrlValidator(arrayOf("http", "https"))
 
     /**
      * Отдаёт ссылку на объект в канонической форме.
@@ -42,7 +40,6 @@ internal object UrlCanonicolizerImpl : UrlCanonicolizer {
             }
             .build()
             .toURI()
-            .validated()
     }
 
     private fun fixRfc3986(href: String) =
@@ -60,16 +57,6 @@ internal object UrlCanonicolizerImpl : UrlCanonicolizer {
             .resolve(withCanonicalPath)
             .withTrailingSlashFixed()
     }
-
-    /**
-     * Бросаем исключение при невалидном URI
-     */
-    private fun URI.validated() =
-        also {
-            require(urlValidator.isValid(this.toString())) {
-                "Результирующий URL $this невалидный."
-            }
-        }
 
     /**
      * Если путь пустой, устанавливаем его в единственный символ '/'.

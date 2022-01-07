@@ -51,7 +51,7 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
     val mirrorPath = mirrorDir.toPath()
     mirrorPath.deleteIfExists()
     mirrorPath.createDirectories()
-    val toRoot = mirrorPath.resolve(mainConfig.publicUrl().host.toString().replace('.', '_'))
+    val toRoot = mirrorPath.resolve(mainConfig.rootMain().host.toString().replace('.', '_'))
     toRoot.createDirectories()
     val toRootWebp = toRoot.resolve("webp")
     toRootWebp.createDirectories()
@@ -64,14 +64,15 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
         ignoredContentTypes = mainConfig.ignoredContentTypes().map { ContentType.parse(it) }.toSet(),
     )
     val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
-    val rootUri = canonicolizer.canonicalize(URI("."), mainConfig.publicUrl().toString())
+    val rootMain = canonicolizer.canonicalize(URI("."), mainConfig.rootMain().toString())
+    val rootAliases: List<URI> = mainConfig.rootAliases().map { canonicolizer.canonicalize(URI("."), it.toString()) }
     val relativizer: UrlRelativizer = UrlRelativizerImpl
     val transformer: UrlTransformer = UrlTransformerImpl
     val ignoredPrefixes = (mainConfig.ignoredPrefixes() + vault.wordpressLoginPath())
-        .map { canonicolizer.canonicalize(rootUri, it.trim()).toString() }
+        .map { canonicolizer.canonicalize(rootMain, it.trim()).toString() }
         .toSet()
     val ignoredSuffixes = mainConfig.ignoredSuffixes()
-        .map { canonicolizer.canonicalize(rootUri, it.trim()).toString() }
+        .map { canonicolizer.canonicalize(rootMain, it.trim()).toString() }
         .toSet()
 
     val linkExtractor: LinkExtractor = LinkExtractorImpl(
@@ -79,12 +80,13 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
         ignoredPrefixes = ignoredPrefixes,
         ignoredSuffixes = ignoredSuffixes,
     )
-    val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootUri)
-    val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(rootUri)
+    val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootMain, rootAliases)
+    val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(rootMain)
     val webpEncoder: WebpEncoder = WebpEncoderImpl(mainConfig.cwebpExecutable())
     val athropos: Athropos = AthroposImpl
     val recursiveScraper: RecursiveScraper = RecursiveScraperImpl(
-        fromRoot = rootUri,
+        fromRoot = rootMain,
+        fromAliases = rootAliases,
         toRoot = toRoot,
         toRootWebp = toRootWebp,
         downloader = downloader,

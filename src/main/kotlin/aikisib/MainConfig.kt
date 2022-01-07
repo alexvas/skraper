@@ -9,9 +9,14 @@ import java.net.URL
 interface MainConfig : Config {
 
     /**
-     * Корневой URL публичного сайта.
+     * Корневой URL публичного сайта, который надо отзеркалить.
      */
-    fun publicUrl(): URL
+    fun rootMain(): URL
+
+    /**
+     * Альтернативные псевдонимы сайта, куда могут ссылаться ресурсы.
+     */
+    fun rootAliases(): List<URL>
 
     /**
      * Ненужные для зеркалирования префиксы.

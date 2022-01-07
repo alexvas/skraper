@@ -198,23 +198,23 @@ private class JsonLinkExtractor(
     uriCanonicolizer: UrlCanonicolizer,
     ignoredPrefixes: Set<String>,
     ignoredSuffixes: Set<String>,
-    rootUri: URI,
+    rootMain: URI,
 ) : LinkExtractorBase(uriCanonicolizer, ignoredPrefixes, ignoredSuffixes), LinkExtractor {
 
-    private val rootUriPrefixRegex: Regex
+    private val rootMainPrefixRegex: Regex
 
     init {
-        val rootUriPrefix = rootUri.toString()
+        val rootMainPrefix = rootMain.toString()
             .removeSuffix("/")
             .replace("/", "\\/")
-        rootUriPrefixRegex = Regex("""(\Q$rootUriPrefix\E[^")<' ]++)""")
+        rootMainPrefixRegex = Regex("""(\Q$rootMainPrefix\E[^")<' ]++)""")
     }
 
     override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
         val result = mutableMapOf<String, URI>()
         val from = originalDescription.localPath
         val text = from.readText()
-        for (m in rootUriPrefixRegex.findAll(text)) {
+        for (m in rootMainPrefixRegex.findAll(text)) {
             val link = m.groupValues[1].replace("\\/", "/")
                 .removeSuffix("\\")
             result.maybeAdd(originalDescription.remoteUri, link, from)

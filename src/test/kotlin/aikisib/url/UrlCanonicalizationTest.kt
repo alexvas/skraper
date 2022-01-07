@@ -527,18 +527,15 @@ class UrlCanonicalizationTest {
         }
 
         @Test
-        fun `некорректный путь относительно корневого узла вызовет ошибку`() {
+        fun `некорректный путь относительно корневого узла НЕ вызовет ошибку`() {
             // given
-            val relativeInput = "../somefile.jpg"
+            val input = "../somefile.jpg"
 
-            assertThatIllegalArgumentException()
-                .isThrownBy {
-                    // when
-                    sut.canonicalize(root, relativeInput)
-                }
-                // then
-                .withMessageContaining("Результирующий URL ")
-                .withMessageContaining(" невалидный")
+            // when
+            val canonical = sut.canonicalize(root, input)
+
+            // then
+            assertThat(canonical.rawPath).isEqualTo("/../somefile.jpg")
         }
 
         @Test

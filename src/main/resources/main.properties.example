@@ -1,9 +1,13 @@
-# скопируйте файл, отбросив расширение ".example".
-# Корневой URL публичного сайта.
-publicUrl=https://aikisib.ru
+# Cкопируйте файл, отбросив расширение ".example".
+
+# Корневой URL публичного сайта, который надо отзеркалить.
+rootMain=http://localhost:7080
+
+# Альтернативные псевдонимы сайта, куда могут ссылаться ресурсы. Разделитель списка -- запятая.
+rootAliases=https://aikisib.ru, https://staging.aikisib.ru
 
 # Ненужные для зеркалирования префиксы. Разделитель списка -- запятая.
-ignoredPrefixes = /comments, /wp-json, /wp-admin, /xmlrpc
+ignoredPrefixes = /comments, /wp-json, /wp-admin, /xmlrpc, /?p
 
 # Ненужные для зеркалирования суффиксы. Разделитель списка -- запятая.
 ignoredSuffixes = xml

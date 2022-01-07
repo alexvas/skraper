@@ -27,25 +27,25 @@ interface ContentTransformerFactory {
 }
 
 internal class ContentTransformerFactoryImpl(
-    private val rootUri: URI,
+    private val rootMain: URI,
 ) : ContentTransformerFactory {
     override fun create(
         originalDescription: OriginalDescription,
         relativeLinks: Map<String, URI>,
         target: Path,
     ): ContentTransformer =
-        ContentTransformerImpl(rootUri, originalDescription, relativeLinks, target)
+        ContentTransformerImpl(rootMain, originalDescription, relativeLinks, target)
 }
 
 private class ContentTransformerImpl(
-    rootUri: URI,
+    rootMain: URI,
     private val originalDescription: OriginalDescription,
     private val relativeLinks: Map<String, URI>,
     private val target: Path,
 ) : ContentTransformer {
 
-    private val rootUriStr = rootUri.toString().removeSuffix("/")
-    private val ajaxEscapedRootUri = rootUriStr.replace("/", "\\/")
+    private val rootMainStr = rootMain.toString().removeSuffix("/")
+    private val ajaxEscapedRootMain = rootMainStr.replace("/", "\\/")
 
     override fun transformingMoveFileInPlace() {
         var content = originalDescription.localPath.readText()
@@ -63,8 +63,8 @@ private class ContentTransformerImpl(
             ContentType.Text.Html -> {
                 content = fixDom(content, relativeLinks)
                 content = content
-                    .replace(ajaxEscapedRootUri, "")
-                    .replace(rootUriStr, "")
+                    .replace(ajaxEscapedRootMain, "")
+                    .replace(rootMainStr, "")
             }
             else -> {}
         }
