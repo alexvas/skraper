@@ -6,6 +6,11 @@ rootMain=http://localhost:7080
 # Альтернативные псевдонимы сайта, куда могут ссылаться ресурсы. Разделитель списка -- запятая.
 rootAliases=https://aikisib.ru, https://staging.aikisib.ru
 
+# Целевой URL, который применяется для
+# <link rel="canonical" href="bla-bla-bla">,
+# где href должен быть абсолютной ссылкой.
+canonicalHref=https://aikisib.ru
+
 # Ненужные для зеркалирования префиксы. Разделитель списка -- запятая.
 ignoredPrefixes = /comments, /wp-json, /wp-admin, /xmlrpc, /?p
 

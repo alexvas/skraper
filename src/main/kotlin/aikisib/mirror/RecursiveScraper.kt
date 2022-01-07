@@ -168,15 +168,7 @@ internal class RecursiveScraperImpl(
             // различия в схеме игнорируем
             if (host == alias.host && port == alias.port && userInfo == alias.userInfo) {
                 // подменяем псевдоним на основной URI
-                return URI(
-                    fromRoot.scheme,
-                    fromRoot.userInfo,
-                    fromRoot.host,
-                    fromRoot.port,
-                    path,
-                    query,
-                    fragment,
-                )
+                return sameOrigin(fromRoot)
             }
         }
         return this

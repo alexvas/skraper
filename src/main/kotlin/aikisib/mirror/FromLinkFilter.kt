@@ -34,16 +34,17 @@ internal class FromLinkFilterImpl(
     }
 
     // подменяем псевдоним на основной URI
-    private fun URI.deAlias() = URI(
-        rootMain.scheme,
-        rootMain.userInfo,
-        rootMain.host,
-        rootMain.port,
-        path,
-        query,
-        fragment,
-    )
+    private fun URI.deAlias() =
+        sameOrigin(rootMain)
 }
+
+internal fun URI.sameOrigin(ethalone: URI) = URI(
+    ethalone.scheme,
+    ethalone.userInfo,
+    ethalone.host,
+    ethalone.port,
+    path, query, fragment
+)
 
 private fun URI.sameSchemeAs(anyRoot: URI) =
     URI(

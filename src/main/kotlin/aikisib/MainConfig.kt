@@ -19,6 +19,15 @@ interface MainConfig : Config {
     fun rootAliases(): List<URL>
 
     /**
+     * Целевой URL, который применяется для
+     * ```
+     * <link rel="canonical" href="bla-bla-bla">,
+     * ```
+     * где href должен быть абсолютной ссылкой.
+     */
+    fun canonicalHref(): URL
+
+    /**
      * Ненужные для зеркалирования префиксы.
      */
     fun ignoredPrefixes(): List<String>

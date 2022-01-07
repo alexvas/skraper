@@ -66,6 +66,7 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
     val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
     val rootMain = canonicolizer.canonicalize(URI("."), mainConfig.rootMain().toString())
     val rootAliases: List<URI> = mainConfig.rootAliases().map { canonicolizer.canonicalize(URI("."), it.toString()) }
+    val canonicalHref = canonicolizer.canonicalize(URI("."), mainConfig.canonicalHref().toString())
     val relativizer: UrlRelativizer = UrlRelativizerImpl
     val transformer: UrlTransformer = UrlTransformerImpl
     val ignoredPrefixes = (mainConfig.ignoredPrefixes() + vault.wordpressLoginPath())
@@ -81,7 +82,7 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
         ignoredSuffixes = ignoredSuffixes,
     )
     val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootMain, rootAliases)
-    val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(rootMain)
+    val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(rootMain, canonicalHref)
     val webpEncoder: WebpEncoder = WebpEncoderImpl(mainConfig.cwebpExecutable())
     val athropos: Athropos = AthroposImpl
     val recursiveScraper: RecursiveScraper = RecursiveScraperImpl(

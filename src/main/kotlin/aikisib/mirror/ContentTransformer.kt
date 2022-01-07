@@ -28,13 +28,14 @@ interface ContentTransformerFactory {
 
 internal class ContentTransformerFactoryImpl(
     private val rootMain: URI,
+    private val canonicalHref: URI,
 ) : ContentTransformerFactory {
     override fun create(
         originalDescription: OriginalDescription,
         relativeLinks: Map<String, URI>,
         target: Path,
     ): ContentTransformer =
-        ContentTransformerImpl(rootMain, originalDescription, relativeLinks, target)
+        ContentTransformerImpl(rootMain, originalDescription, relativeLinks, target, canonicalHref)
 }
 
 private class ContentTransformerImpl(
@@ -42,6 +43,7 @@ private class ContentTransformerImpl(
     private val originalDescription: OriginalDescription,
     private val relativeLinks: Map<String, URI>,
     private val target: Path,
+    private val canonicalHref: URI,
 ) : ContentTransformer {
 
     private val rootMainStr = rootMain.toString().removeSuffix("/")
@@ -65,6 +67,7 @@ private class ContentTransformerImpl(
                 content = content
                     .replace(ajaxEscapedRootMain, "")
                     .replace(rootMainStr, "")
+                content = fixCanonicalLink(content, originalDescription.remoteUri)
             }
             else -> {}
         }
@@ -81,7 +84,7 @@ private class ContentTransformerImpl(
         doc.getElementsByTag("link")
             .asSequence()
             .filter {
-                it.attr("rel") in listOf("canonical", "shortlink", "alternate", "pingback", "EditURI")
+                it.attr("rel") in listOf("shortlink", "alternate", "pingback", "EditURI")
             }
             .forEach { it.remove() }
         doc.getElementsByTag("form")
@@ -106,6 +109,14 @@ private class ContentTransformerImpl(
                 img.attr("srcset", result)
             }
 
+        return doc.toString()
+    }
+
+    private fun fixCanonicalLink(input: String, remoteUri: URI): String {
+        val doc: Document = Jsoup.parse(input)
+        val canonical = doc.getElementsByTag("link")
+            .firstOrNull { it.attr("rel") == "canonical" }
+        canonical?.attr("href", remoteUri.sameOrigin(canonicalHref).toString())
         return doc.toString()
     }
 
