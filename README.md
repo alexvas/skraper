@@ -22,7 +22,7 @@ src/main/resources/vault.properties.example
 ```
 должна проходить.
 
-Вдобавок к зеркалированию сайта изображения `.jpg` и `.png` оттуда дополнительно сохраняются в формате 
+Вдобавок к зеркалированию сайта, изображения `.jpg` и `.png` оттуда дополнительно сохраняются в формате 
 `.wepb`. Для этого в настройках надо указать путь к 
 [гугловой утилите `cwebp`](https://developers.google.com/speed/webp/docs/precompiled) для 
 конвертирования изображений.
@@ -36,4 +36,4 @@ src/main/resources/vault.properties.example
 ```shell
 ./gradlew distTar
 ```
-смотри результат в `build/distributions` и запуска скрипта из распакованного архива.
+(смотри результат в `build/distributions`) и запуска скрипта из распакованного архива.
