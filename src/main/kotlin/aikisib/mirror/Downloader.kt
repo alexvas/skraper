@@ -12,6 +12,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.fileExtensions
+import io.ktor.http.lastModified
 import io.ktor.http.takeFrom
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -81,6 +82,7 @@ internal class DownloaderImpl(
             type = contentType.withoutParameters(),
             size = output.second / BYTES_IN_KILOBYTE,
             localPath = output.first,
+            lastModified = response.lastModified(),
         )
     }
 

@@ -11,10 +11,12 @@ import kotlinx.coroutines.launch
 import mu.KLogging
 import java.net.URI
 import java.nio.file.Path
+import java.nio.file.attribute.FileTime
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.name
+import kotlin.io.path.setLastModifiedTime
 
 interface RecursiveScraper {
 
@@ -39,6 +41,7 @@ internal class RecursiveScraperImpl(
     private val contentTransformerFactory: ContentTransformerFactory,
     private val webpEncoder: WebpEncoder,
     private val athropos: Athropos,
+    private val sitemapGenerator: SitemapGenerator,
 ) : RecursiveScraper {
     private val linkRepo: MutableMap<URI, Unit> = ConcurrentHashMap()
 
@@ -53,6 +56,8 @@ internal class RecursiveScraperImpl(
         }
         logger.info { "Трансформируем содержимое: меняем ссылки на локальные." }
         moveContentTransforming()
+        logger.info { "Генерируем sitemap.xml и robots.txt" }
+        sitemapGenerator.generate(descriptionRepo.values.asSequence())
         logger.info { "Генерируем копии изображений в формате WebP." }
         makeWebPCopy(toRootWebp)
     }
@@ -89,6 +94,8 @@ internal class RecursiveScraperImpl(
         val target = resolveTarget(originalDescription)
         target.parent.createDirectories()
         originalDescription.localPath.copyTo(target, overwrite = true)
+        val lastModified = originalDescription.lastModified ?: return
+        target.setLastModifiedTime(FileTime.fromMillis(lastModified.time))
     }
 
     private fun resolveTarget(originalDescription: OriginalDescription): Path {

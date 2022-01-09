@@ -12,6 +12,8 @@ import aikisib.mirror.LinkExtractor
 import aikisib.mirror.LinkExtractorImpl
 import aikisib.mirror.RecursiveScraper
 import aikisib.mirror.RecursiveScraperImpl
+import aikisib.mirror.SitemapGenerator
+import aikisib.mirror.SitemapGeneratorImpl
 import aikisib.mirror.WebpEncoder
 import aikisib.mirror.WebpEncoderImpl
 import aikisib.slider.SliderConfig
@@ -85,6 +87,10 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
     val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(rootMain, canonicalHref)
     val webpEncoder: WebpEncoder = WebpEncoderImpl(mainConfig.cwebpExecutable())
     val athropos: Athropos = AthroposImpl
+    val sitemapGenerator: SitemapGenerator = SitemapGeneratorImpl(
+        canonicalHref = canonicalHref,
+        targerRootPath = toRoot,
+    )
     val recursiveScraper: RecursiveScraper = RecursiveScraperImpl(
         fromRoot = rootMain,
         fromAliases = rootAliases,
@@ -98,6 +104,7 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
         contentTransformerFactory = contentTransformerFactory,
         webpEncoder = webpEncoder,
         athropos = athropos,
+        sitemapGenerator = sitemapGenerator,
     )
     // закончили инжектировать зависимости.
 

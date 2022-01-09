@@ -10,8 +10,10 @@ import java.net.URI
 import java.nio.file.FileSystemException
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import java.nio.file.attribute.FileTime
 import kotlin.io.path.createDirectories
 import kotlin.io.path.readText
+import kotlin.io.path.setLastModifiedTime
 import kotlin.io.path.writeText
 
 interface ContentTransformer {
@@ -74,6 +76,8 @@ private class ContentTransformerImpl(
         target.parent.createDirectories()
         try {
             target.writeText(content, options = arrayOf(StandardOpenOption.CREATE))
+            val lastModified = originalDescription.lastModified ?: return
+            target.setLastModifiedTime(FileTime.fromMillis(lastModified.time))
         } catch (e: FileSystemException) {
             logger.warn { "не удалось переместить файл $target: ${e.message}" }
         }

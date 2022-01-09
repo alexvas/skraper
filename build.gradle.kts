@@ -42,12 +42,11 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     val webDriverManagerVersion = "5.0.3"
     implementation("io.github.bonigarcia:webdrivermanager:$webDriverManagerVersion")
-    implementation("org.apache.logging.log4j:log4j-api:2.16.0")
+    implementation("org.apache.logging.log4j:log4j-api:2.17.0")
     implementation("org.slf4j:slf4j-api:1.7.32")
-    val seleniumVersion = "4.1.0"
+    val seleniumVersion = "4.1.1"
     implementation("org.seleniumhq.selenium:selenium-java:$seleniumVersion")
     implementation("org.jsoup:jsoup:1.14.3")
-    implementation("commons-validator:commons-validator:1.7")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 
     // configuration
@@ -58,16 +57,18 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-logging:$ktorVersion")
 
+    implementation("cz.jiripinkas:jsitemapgenerator:4.5")
+
     testImplementation("org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion")
 
     testImplementation("org.assertj:assertj-core:3.21.0")
 
     // рантаймовая зависимость на реализацию логирования slf4j для прода
     // logging facade
-    implementation("io.github.microutils:kotlin-logging:2.1.16")
+    implementation("io.github.microutils:kotlin-logging:2.1.21")
     runtimeOnly("org.slf4j:jul-to-slf4j:1.7.32")
     runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.17.0")
-    runtimeOnly("ch.qos.logback:logback-classic:1.2.9")
+    runtimeOnly("ch.qos.logback:logback-classic:1.2.10")
     runtimeOnly("org.fusesource.jansi:jansi:2.4.0")
 
     val junitVersion = "5.8.2"

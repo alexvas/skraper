@@ -3,6 +3,7 @@ package aikisib.model
 import io.ktor.http.ContentType
 import java.net.URI
 import java.nio.file.Path
+import java.util.Date
 
 /**
  * Описание скачанного локально ресурса,
@@ -29,4 +30,9 @@ data class OriginalDescription(
      * Путь ко временному файлу, куда сохранили содержимое.
      */
     val localPath: Path,
+
+    /**
+     * Опциональное время последнего изменения файла.
+     */
+    val lastModified: Date?,
 )
