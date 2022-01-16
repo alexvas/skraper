@@ -8,3 +8,9 @@ serverPort = 9332
 
 # Секрет Гугловой рекапчи
 reCaptchaSecret = 111111111-2222222-33333333
+
+# Идентификатор бота Телеги, cмотри @BotFather.
+telegramBotId = aaaaaa-bbbb-1111-333cde
+
+# Идентификатор канала Телеги, куда надо пересылать сообщения из ContactForm7.
+telegramChatId = -089348343

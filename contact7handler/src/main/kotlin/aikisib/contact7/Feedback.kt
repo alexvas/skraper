@@ -57,6 +57,16 @@ data class Feedback(
 
         private fun tag(contactFormId: Int, pageId: Int) =
             "wpcf7-f$contactFormId-p$pageId-o1"
+
+        fun aborted(contactFormId: Int, pageId: Int) = Feedback(
+            contact_form_id = contactFormId,
+            status = "aborted",
+            message = "При отправке сообщения произошла ошибка. " +
+                "Пожалуйста, попробуйте ещё раз позже.",
+            posted_data_hash = "",
+            into = "#" + tag(contactFormId, pageId),
+            invalid_fields = listOf(),
+        )
     }
 }
 

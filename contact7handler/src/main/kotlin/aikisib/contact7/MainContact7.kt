@@ -1,5 +1,9 @@
 package aikisib.contact7
 
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.call
@@ -30,10 +34,12 @@ suspend fun main() {
     Thread.setDefaultUncaughtExceptionHandler(DefaultUncaughtExceptionHandler())
     val config = createConfig(Contact7Config::class)
 
+    val httpClient = createHttpClient()
     val validator: Contact7FormValidator = Contact7FormValidatorImpl
-    val reCaptchaChecker: ReCaptchaChecker = ReCaptchaCheckerImpl(config.reCaptchaSecret())
+    val reCaptchaChecker: ReCaptchaChecker = ReCaptchaCheckerImpl(config.reCaptchaSecret(), httpClient)
+    val telegramBot: TelegramBot = TelegramBotImpl(config.telegramBotId(), config.telegramChatId(), httpClient)
 
-    val handler: Contact7Handler = Contact7HandlerImpl(validator, reCaptchaChecker)
+    val handler: Contact7Handler = Contact7HandlerImpl(validator, reCaptchaChecker, telegramBot)
 
     embeddedServer(
         factory = CIO,
@@ -70,6 +76,27 @@ suspend fun main() {
         }
     }.start(wait = true)
 }
+
+private fun createHttpClient() =
+    HttpClient(io.ktor.client.engine.cio.CIO) {
+        expectSuccess = false
+        install(io.ktor.client.plugins.ContentNegotiation) {
+            json(
+                Json {
+                    isLenient = true
+                    ignoreUnknownKeys = true
+                },
+            )
+        }
+        install(Logging) {
+            logger = object : Logger {
+                override fun log(message: String) {
+                    ReCaptchaCheckerImpl.logger().trace { message }
+                }
+            }
+            level = LogLevel.INFO
+        }
+    }
 
 private fun <T : Config> createConfig(kClass: KClass<T>): T =
     ConfigFactory.create(kClass.java)

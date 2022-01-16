@@ -20,4 +20,14 @@ interface Contact7Config : Config {
      * Секрет Гугловой рекапчи
      */
     fun reCaptchaSecret(): String
+
+    /**
+     * Идентификатор бота Телеги, cмотри @BotFather.
+     */
+    fun telegramBotId(): String
+
+    /**
+     * Идентификатор канала Телеги,куда надо пересылать сообщения из ContactForm7.
+     */
+    fun telegramChatId(): Long
 }

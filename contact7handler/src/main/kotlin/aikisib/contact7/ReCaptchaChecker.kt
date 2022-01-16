@@ -2,20 +2,12 @@ package aikisib.contact7
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.ContentNegotiation
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logger
-import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.takeFrom
-import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import mu.KLogging
 
 interface ReCaptchaChecker {
@@ -31,28 +23,8 @@ interface ReCaptchaChecker {
 
 internal class ReCaptchaCheckerImpl(
     private val reCaptchaSecret: String,
+    private val client: HttpClient,
 ) : ReCaptchaChecker {
-
-    private val client = HttpClient(CIO) {
-        expectSuccess = false
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                },
-            )
-        }
-        install(Logging) {
-            logger = object : Logger {
-                override fun log(message: String) {
-                    logger().trace { message }
-                }
-            }
-            level = LogLevel.INFO
-        }
-    }
-
     private val lock = Mutex()
     private val localResultCache = LruCache()
 
@@ -68,15 +40,12 @@ internal class ReCaptchaCheckerImpl(
         }
 
     private suspend fun validateWithGoogle(reCaptchaResponseToken: String): Boolean {
-        val response = client.post {
-            url {
-                takeFrom(RECAPTCHA_VERIFICATION_ENDPOINT)
-            }
+        val response = client.post(RECAPTCHA_VERIFICATION_ENDPOINT) {
             parameter("secret", reCaptchaSecret)
             parameter("response", reCaptchaResponseToken)
         }
         if (response.status != HttpStatusCode.OK) {
-            logger.warn { "Статус ${response.status} для." }
+            logger.warn { "Статус ${response.status} для проверки Капчи." }
             return false
         }
 

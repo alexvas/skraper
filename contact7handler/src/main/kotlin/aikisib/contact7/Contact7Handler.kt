@@ -17,6 +17,7 @@ interface Contact7Handler {
 class Contact7HandlerImpl(
     private val formValidator: Contact7FormValidator,
     private val reCaptchaChecker: ReCaptchaChecker,
+    private val telegramBot: TelegramBot,
 ) : Contact7Handler {
 
     /**
@@ -53,11 +54,23 @@ class Contact7HandlerImpl(
             )
 
         dumpOutput(formParameters)
+        val filtered = formParameters.asSequence()
+            .map { (key, value) -> if (value == null) null else key to value }
+            .filterNotNull()
+            .toMap()
 
-        return Feedback.mailSent(
-            contactFormId = contactFormId,
-            pageId = pageId,
-        )
+        val sendTelegramResult = telegramBot.send(referer, filtered)
+
+        return if (sendTelegramResult)
+            Feedback.mailSent(
+                contactFormId = contactFormId,
+                pageId = pageId,
+            )
+        else
+            Feedback.aborted(
+                contactFormId = contactFormId,
+                pageId = pageId,
+            )
     }
 
     private fun dumpOutput(formParameters: Map<String, String?>) {
