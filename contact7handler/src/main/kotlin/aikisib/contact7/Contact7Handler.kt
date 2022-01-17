@@ -3,6 +3,8 @@ package aikisib.contact7
 import mu.KLogging
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
+import kotlin.io.path.createFile
+import kotlin.io.path.exists
 import kotlin.io.path.writeText
 
 interface Contact7Handler {
@@ -85,6 +87,9 @@ class Contact7HandlerImpl(
         }
 
         val fileOutput = Paths.get("/tmp/contact7.txt")
+        if (!fileOutput.exists()) {
+            fileOutput.createFile()
+        }
         fileOutput.writeText(output.joinToString(separator = "\n"), options = arrayOf(StandardOpenOption.APPEND))
     }
 
