@@ -27,7 +27,7 @@ kotlin {
 
 application {
     // Define the main class for the application.
-    mainClass.set("aikisib.contact7.MainKt")
+    mainClass.set("aikisib.contact7.MainContact7Kt")
 }
 
 tasks.withType<Test> {
