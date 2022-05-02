@@ -10,13 +10,12 @@ import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.plugins.ContentNegotiation
-import io.ktor.server.plugins.StatusPages
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.header
 import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
-import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
@@ -27,6 +26,7 @@ import mu.KotlinLogging.logger
 import org.aeonbits.owner.Config
 import org.aeonbits.owner.ConfigFactory
 import kotlin.reflect.KClass
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 private val logger = logger("contact7")
 
@@ -59,19 +59,17 @@ suspend fun main() {
                 },
             )
         }
-        install(Routing) {
-            routing {
-                get("/{...}") {
-                    call.respondText("")
-                }
+        routing {
+            get("/{...}") {
+                call.respondText("")
+            }
 
-                post("/wp-json/contact-form-7/v1/contact-forms/{formNum}/feedback") {
-                    val referer = call.request.header("referer")
+            post("/wp-json/contact-form-7/v1/contact-forms/{formNum}/feedback") {
+                val referer = call.request.header("referer")
 
-                    val formParameters = call.receiveParameters().toMap().mapValues { it.value.firstOrNull() }
-                    val feedback = handler.handleRequest(referer, formParameters) ?: return@post
-                    call.respond(feedback)
-                }
+                val formParameters = call.receiveParameters().toMap().mapValues { it.value.firstOrNull() }
+                val feedback = handler.handleRequest(referer, formParameters) ?: return@post
+                call.respond(feedback)
             }
         }
     }.start(wait = true)
@@ -80,7 +78,7 @@ suspend fun main() {
 private fun createHttpClient() =
     HttpClient(io.ktor.client.engine.cio.CIO) {
         expectSuccess = false
-        install(io.ktor.client.plugins.ContentNegotiation) {
+        install(ClientContentNegotiation) {
             json(
                 Json {
                     isLenient = true
@@ -99,7 +97,7 @@ private fun createHttpClient() =
     }
 
 private fun <T : Config> createConfig(kClass: KClass<T>): T =
-    ConfigFactory.create(kClass.java)
+    ConfigFactory.create(kClass.java)!!
 
 /**
  * Last resort exception handler
