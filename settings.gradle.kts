@@ -112,4 +112,5 @@ dependencyResolutionManagement {
 
 include(
     "contact7handler",
+    "skraper",
 )

@@ -2,10 +2,7 @@ import kotlin.text.Charsets.UTF_8
 
 plugins {
     // kotlin support
-    // kotlin support
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-
     // linters
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
@@ -15,21 +12,25 @@ plugins {
 
 application {
     // Define the main class for the application.
-    mainClass.set("aikisib.contact7.MainContact7Kt")
+    mainClass.set("aikisib.MainKt")
 }
 
 dependencies {
     implementation(platform(libs.kotlin.bom))
-    implementation(libs.bundles.kotlin.serialization)
+
+    implementation(libs.bundles.web.driver.manager)
     implementation(libs.log4j.api)
     implementation(libs.slf4j.api)
+
+    implementation(libs.selenium.java)
+    implementation(libs.jsoup)
     implementation(libs.coroutines.core)
 
     // configuration
     implementation(libs.owner)
-    implementation(libs.bundles.ktor.server)
+
     implementation(libs.bundles.ktor.client.base)
-    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.jsitemapgenerator)
 
     // рантаймовая зависимость на реализацию логирования slf4j для прода
     // logging facade
@@ -39,6 +40,7 @@ dependencies {
     runtimeOnly(libs.logback)
     runtimeOnly(libs.jansi)
 
+    testImplementation(libs.selenium.chrome.driver)
     testImplementation(libs.assertj)
     testImplementation(libs.jupiter.api)
     testRuntimeOnly(libs.jupiter.engine)

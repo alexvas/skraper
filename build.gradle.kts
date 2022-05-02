@@ -1,75 +1,47 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import kotlin.text.Charsets.UTF_8
 
 plugins {
     // kotlin support
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization) apply false
     // linters
-    alias(libs.plugins.ktlint)
-    alias(libs.plugins.detekt)
-
-    application
+    alias(libs.plugins.ktlint) apply false
+    alias(libs.plugins.detekt) apply false
 }
 
-group = "aikisib"
-version = "1.0-SNAPSHOT"
+subprojects {
+    group = "aikisib"
+    version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
-
-kotlin {
-    jvmToolchain {
-        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of("11"))
+    repositories {
+        mavenCentral()
     }
-}
 
-application {
-    // Define the main class for the application.
-    mainClass.set("aikisib.MainKt")
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-    reports {
-        junitXml.required.set(true)
-        html.required.set(true)
+    configurations.all {
+        /* настройка логирования log4j[2] -> slf4j: начало */
+        exclude(group = "org.slf4j", module = "slf4j-log4j12") // бридж в обратную сторону не нужен
+        exclude(group = "org.slf4j", module = "log4j-over-slf4j") // потому что пользуемся бриджем log4j-to-slf4j
+        exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j-impl") // реализация log4j2 не нужна
+        exclude(group = "log4j", module = "log4j") // / реализация log4j не нужна
     }
-    systemProperty("file.encoding", UTF_8.toString())
-}
 
-dependencies {
-    implementation(platform(libs.kotlin.bom))
+    afterEvaluate {
+        extensions.apply {
+            findByType(KotlinJvmProjectExtension::class)?.apply {
+                jvmToolchain {
+                    (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of("11"))
+                }
+            }
+        }
 
-    implementation(libs.bundles.web.driver.manager)
-    implementation(libs.log4j.api)
-    implementation(libs.slf4j.api)
-
-    implementation(libs.selenium.java)
-    implementation(libs.jsoup)
-    implementation(libs.coroutines.core)
-
-    // configuration
-    implementation(libs.owner)
-
-    implementation(libs.bundles.ktor.client.base)
-    implementation(libs.jsitemapgenerator)
-
-    // рантаймовая зависимость на реализацию логирования slf4j для прода
-    // logging facade
-    implementation(libs.kotlin.logging)
-    runtimeOnly(libs.jul.to.slf4j)
-    runtimeOnly(libs.log4j.to.slf4j)
-    runtimeOnly(libs.logback)
-    runtimeOnly(libs.jansi)
-
-    testImplementation(libs.selenium.chrome.driver)
-    testImplementation(libs.assertj)
-    testImplementation(libs.jupiter.api)
-    testRuntimeOnly(libs.jupiter.engine)
-
-    // рантаймовая зависимость на реализацию логирования slf4j для тестов
-    testRuntimeOnly(libs.jul.to.slf4j)
-    testRuntimeOnly(libs.log4j.to.slf4j)
-    testRuntimeOnly(libs.logback)
-    testRuntimeOnly(libs.jansi)
+        tasks.withType<Test> {
+            useJUnitPlatform()
+            reports {
+                junitXml.required.set(true)
+                html.required.set(true)
+            }
+            systemProperty("file.encoding", UTF_8.toString())
+        }
+    }
 }
