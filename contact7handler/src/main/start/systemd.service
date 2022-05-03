@@ -1,0 +1,65 @@
+[Unit]
+Description=Contact7 Handler
+
+Before=multi-user.target
+After=remote-fs.target
+After=network-online.target
+
+#запуск другого если этот крешится, другие перечислены:
+#OnFailure=unit-status-mail@%n.service
+
+[Service]
+Type=simple
+WorkingDirectory=/var/log/contact7handler
+EnvironmentFile=/etc/default/contact7handler
+ExecStart=/usr/share/contact7handler/bin/start.sh
+
+#ProtectSystem=full
+#ProtectHome=true
+#PrivateDevices=true
+#PrivateTmp=true
+
+# пользуемся только UNIX-сокетами и IP4 адресами
+#RestrictAddressFamilies=AF_UNIX AF_INET
+
+#SystemCallFilter=@basic-io @file-system @io-event @network-io
+#SystemCallArchitectures=native
+# ничего не передаём в процесс
+#StandardInput=null
+
+# статус jvm после выхода по SIGTERM
+SuccessExitStatus=143
+TimeoutStopSec=120
+
+# рестартуем всегда после самопроизвольной остановки, за исключением...
+Restart=always
+# когда нету нужных для работы конфигов, сервис не рестартуем
+RestartPreventExitStatus=1
+# задержка рестарта в секундах
+# нужна, так как сокет убитого процесса мистическим образом остаётся занятым
+RestartSec=10
+# в минуту не более двух авторестартов
+#StartLimitIntervalSec=60
+StartLimitBurst=2
+
+User=contact7handler
+
+#MemoryMax=3G
+
+# читаем только конфиги и библиотеки
+#ReadOnlyPaths=/srv/@APP@
+# пишем только логи
+#ReadWritePaths=@LOG_DIR@
+# остальные директории виртуализируются
+#ProtectKernelTunables=true
+#ProtectKernelModules=true
+#ProtectControlGroups=true
+#PrivateUsers=true
+# используем пространство имён только для сети
+#RestrictNamespaces=net
+# не борзеем при использовании проца
+#RestrictRealtime=yes
+# ограничиваем набор системных вызовов
+
+[Install]
+WantedBy=multi-user.target

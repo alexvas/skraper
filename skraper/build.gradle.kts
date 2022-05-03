@@ -1,5 +1,3 @@
-import kotlin.text.Charsets.UTF_8
-
 plugins {
     // kotlin support
     alias(libs.plugins.kotlin.jvm)

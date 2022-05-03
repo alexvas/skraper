@@ -1,5 +1,3 @@
-import kotlin.text.Charsets.UTF_8
-
 plugins {
     // kotlin support
     // kotlin support
@@ -16,6 +14,18 @@ plugins {
 application {
     // Define the main class for the application.
     mainClass.set("aikisib.contact7.MainContact7Kt")
+
+    applicationDistribution.from("start") {
+        include("start.sh")
+        to("bin")
+    }
+    applicationDistribution.from("src/main/resources") {
+        include("contact7.properties")
+    }
+}
+
+tasks.jar {
+    exclude("**/*.properties", "**/*.example", "**/*.gitignore")
 }
 
 dependencies {

@@ -3,7 +3,7 @@ import kotlin.text.Charsets.UTF_8
 
 plugins {
     // kotlin support
-    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     // linters
     alias(libs.plugins.ktlint) apply false

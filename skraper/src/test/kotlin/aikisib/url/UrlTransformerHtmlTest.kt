@@ -192,9 +192,9 @@ class UrlTransformerHtmlTest {
         @Test
         fun `добавляем расширение html`() {
             // given
-            val Ы = "ы".urlEncode()
+            val yi = "ы".urlEncode()
             val input = canonicolizer.canonicalize(root, "/ы")
-            assertThat(input.rawPath).isEqualTo("/$Ы")
+            assertThat(input.rawPath).isEqualTo("/$yi")
 
             // when
             val result = transform(input)
