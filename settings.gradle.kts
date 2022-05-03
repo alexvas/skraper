@@ -114,3 +114,16 @@ include(
     "contact7handler",
     "skraper",
 )
+
+// назначаем сборочным скриптам понятные имена
+fun ProjectDescriptor.configureBuildFile() {
+    buildFileName = "$name.gradle.kts"
+    require(buildFile.isFile) {
+        "$buildFile must exist"
+    }
+    children.forEach {
+        it.configureBuildFile()
+    }
+}
+
+rootProject.children.forEach { it.configureBuildFile() }
