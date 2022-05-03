@@ -9,7 +9,7 @@ cd ${PROJ_HOME} || exit 1
 JAVAX_NET_DEBUG=""
 [ -n "$JAVAX_NET_DEBUG_ITEMS" ] && JAVAX_NET_DEBUG="-Djavax.net.debug=${JAVAX_NET_DEBUG_ITEMS}"
 
-IFS='' read -d '' -r OOM_ACTIONS <<'HEREDOC'
+IFS='' read -d '' -r OOM_ACTIONS <<HEREDOC
 -XX:+ExitOnOutOfMemoryError
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:HeapDumpPath=${PROJ_HOME}
@@ -20,7 +20,7 @@ IFS='' read -d '' -r MISC_OPTS <<'HEREDOC'
 -Djava.net.preferIPv4Stack=true
 HEREDOC
 
-CP='-cp .:/lib/*'
+CP='-cp /etc/contact7handler:/usr/share/contact7handler/lib/*'
 
 JDK_JAVA_OPTIONS="$CP $OOM_ACTIONS $MISC_OPTS $JAVAX_NET_DEBUG"
 JDK_JAVA_OPTIONS=${JDK_JAVA_OPTIONS//$'\n'/ }
@@ -70,7 +70,6 @@ fi
 
 mod640() {
   [ -f "$1" ] || return
-  chown @USER@:@LOG_GROUP@ "$1"
   chmod 640 "$1"
 }
 
@@ -103,7 +102,7 @@ execRunner() {
 CONSOLE_OUT=$PROJ_HOME/console.out
 archive "$CONSOLE_OUT"
 
-echo 'starting @DESCRIPTION@ of version @APP_VERSION@' >"$CONSOLE_OUT"
+echo 'starting Contact7 Handler of version' >"$CONSOLE_OUT"
 
 # для отладки надо добавить флаг -Xdiag
 execRunner java \
