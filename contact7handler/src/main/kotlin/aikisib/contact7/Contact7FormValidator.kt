@@ -13,12 +13,14 @@ object Contact7FormValidatorImpl : Contact7FormValidator {
 
     override fun validate(formParameters: Map<String, String?>): List<FormValidationError> {
         val output = mutableListOf<FormValidationError>()
+/*
         if (formParameters["wpgdprc"] != "1") {
             output += FormValidationError(
                 fieldName = "wpgdprc",
                 message = "Примите правила приватности.",
             )
         }
+*/
         formParameters.validate(
             fieldName = "your-name",
             minLength = nameOrContactsMinLength,
