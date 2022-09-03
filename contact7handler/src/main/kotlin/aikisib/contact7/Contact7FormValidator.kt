@@ -35,6 +35,7 @@ object Contact7FormValidatorImpl : Contact7FormValidator {
         )
             ?.let { output += it }
 
+/*
         formParameters.validate(
             fieldName = "your-subject",
             minLength = subjectOrMessageOrCaptchaMinLength,
@@ -49,6 +50,7 @@ object Contact7FormValidatorImpl : Contact7FormValidator {
             maxLength = subjectOrMessageOrCaptchaMaxLength,
         )
             ?.let { output += it }
+*/
 
         formParameters.validate(
             fieldName = "_wpcf7_recaptcha_response",
