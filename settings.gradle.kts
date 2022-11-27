@@ -105,7 +105,7 @@ dependencyResolutionManagement {
 
             // plugins
             plugin("ktlint", "org.jlleitschuh.gradle.ktlint").version("10.2.1")
-            plugin("detekt", "io.gitlab.arturbosch.detekt").version("1.20.0")
+            plugin("detekt", "io.gitlab.arturbosch.detekt").version("1.21.0")
         }
     }
 }

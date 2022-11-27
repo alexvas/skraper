@@ -36,10 +36,10 @@ suspend fun main() {
 
     val httpClient = createHttpClient()
     val validator: Contact7FormValidator = Contact7FormValidatorImpl
-    val reCaptchaChecker: ReCaptchaChecker = ReCaptchaCheckerImpl(config.reCaptchaSecret(), httpClient)
+    val captchaChecker: CaptchaChecker = CaptchaCheckerImpl(config.yaCaptchaSecret(), httpClient)
     val telegramBot: TelegramBot = TelegramBotImpl(config.telegramBotId(), config.telegramChatId(), httpClient)
 
-    val handler: Contact7Handler = Contact7HandlerImpl(validator, reCaptchaChecker, telegramBot)
+    val handler: Contact7Handler = Contact7HandlerImpl(validator, captchaChecker, telegramBot)
 
     embeddedServer(
         factory = CIO,
@@ -66,9 +66,10 @@ suspend fun main() {
 
             post("/wp-json/contact-form-7/v1/contact-forms/{formNum}/feedback") {
                 val referer = call.request.header("referer")
+                val ipAddress = call.request.header("X-Real-IP")
 
                 val formParameters = call.receiveParameters().toMap().mapValues { it.value.firstOrNull() }
-                val feedback = handler.handleRequest(referer, formParameters) ?: return@post
+                val feedback = handler.handleRequest(referer, ipAddress, formParameters) ?: return@post
                 call.respond(feedback)
             }
         }
@@ -89,7 +90,7 @@ private fun createHttpClient() =
         install(Logging) {
             logger = object : Logger {
                 override fun log(message: String) {
-                    ReCaptchaCheckerImpl.logger().trace { message }
+                    CaptchaCheckerImpl.logger().trace { message }
                 }
             }
             level = LogLevel.INFO

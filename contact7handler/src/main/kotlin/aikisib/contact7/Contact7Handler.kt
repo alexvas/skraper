@@ -11,6 +11,7 @@ interface Contact7Handler {
 
     suspend fun handleRequest(
         referer: String?,
+        ipAddress: String?,
         formParameters: Map<String, String?>,
     ): Feedback?
 }
@@ -18,7 +19,7 @@ interface Contact7Handler {
 @Suppress("ReturnCount")
 class Contact7HandlerImpl(
     private val formValidator: Contact7FormValidator,
-    private val reCaptchaChecker: ReCaptchaChecker,
+    private val captchaChecker: CaptchaChecker,
     private val telegramBot: TelegramBot,
 ) : Contact7Handler {
 
@@ -27,11 +28,18 @@ class Contact7HandlerImpl(
      */
     override suspend fun handleRequest(
         referer: String?,
+        ipAddress: String?,
         formParameters: Map<String, String?>,
     ): Feedback? {
 
-        val contactFormId: Int = formParameters.intParameter("_wpcf7") ?: return null
-        val pageId: Int = formParameters.intParameter("_wpcf7_container_post") ?: return null
+        val contactFormId: Int = formParameters.intParameter("_wpcf7") ?: let {
+            logger.debug { "нет идентификатора формы" }
+            return null
+        }
+        val pageId: Int = formParameters.intParameter("_wpcf7_container_post") ?: let {
+            logger.debug { "нет номера страницы" }
+            return null
+        }
 
         val validationResult = formValidator.validate(formParameters)
         if (validationResult.isNotEmpty()) {
@@ -42,8 +50,15 @@ class Contact7HandlerImpl(
             )
         }
 
-        val reCaptchaResponseToken = formParameters["_wpcf7_recaptcha_response"]!!
-        val captchaValidationResult = reCaptchaChecker.validate(reCaptchaResponseToken)
+        val captchaResponseToken = formParameters["smart-token"] ?: let {
+            logger.debug { "нет токена Яндекса" }
+            return null
+        }
+        val ip = ipAddress ?: let {
+            logger.debug { "нет ip-адреса" }
+            return null
+        }
+        val captchaValidationResult = captchaChecker.validate(captchaResponseToken, ip)
             ?: return Feedback.mailSent(
                 contactFormId = contactFormId,
                 pageId = pageId,

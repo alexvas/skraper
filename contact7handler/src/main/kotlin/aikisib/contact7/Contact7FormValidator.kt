@@ -55,7 +55,7 @@ object Contact7FormValidatorImpl : Contact7FormValidator {
 */
 
         formParameters.validate(
-            fieldName = "_wpcf7_recaptcha_response",
+            fieldName = "smart-token",
             minLength = subjectOrMessageOrCaptchaMinLength,
             maxLength = subjectOrMessageOrCaptchaMaxLength,
             required = true,

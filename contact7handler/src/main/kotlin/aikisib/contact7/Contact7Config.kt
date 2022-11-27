@@ -17,9 +17,9 @@ interface Contact7Config : Config {
     fun serverPort(): Int
 
     /**
-     * Секрет Гугловой рекапчи
+     * Секрет Яндекс каптчи
      */
-    fun reCaptchaSecret(): String
+    fun yaCaptchaSecret(): String
 
     /**
      * Идентификатор бота Телеги, cмотри @BotFather.
