@@ -32,7 +32,7 @@ internal object UrlTransformerImpl : UrlTransformer {
     private val FONT_WOFF = ContentType("font", "woff")
     private val FONT_WOFF2 = ContentType("font", "woff2")
 
-    private val extensions = mapOf(
+    private val extensions: Map<ContentType, String> = mapOf(
         ContentType.Text.Html to "html",
         ContentType.Text.CSS to "css",
         ContentType.Text.JavaScript to "js",
@@ -43,7 +43,6 @@ internal object UrlTransformerImpl : UrlTransformer {
         ContentType.Image.JPEG to "jpg",
         ContentType.Image.PNG to "png",
         ContentType.Image.SVG to "svg",
-        ContentType.Application.FontWoff to "woff",
         VND_MS_FONTOBJECT to "eot",
         VIDEO_WEBM to "webm",
         FONT_WOFF to "woff",

@@ -17,7 +17,6 @@ dependencies {
     implementation(platform(libs.kotlin.bom))
 
     implementation(libs.bundles.web.driver.manager)
-    implementation(libs.log4j.api)
     implementation(libs.slf4j.api)
 
     implementation(libs.selenium.java)

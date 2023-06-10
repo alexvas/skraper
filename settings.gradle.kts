@@ -4,26 +4,20 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
 
-            version("kotlin", "1.6.21")
-            plugin("kotlin.jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
-            plugin("kotlin.serialization", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
-            library("kotlin.bom", "org.jetbrains.kotlin", "kotlin-bom").versionRef("kotlin")
+            version("kotlinVersion", "1.8.22")
+            plugin("kotlin.jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlinVersion")
+            plugin("kotlin.serialization", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlinVersion")
+            library("kotlin.bom", "org.jetbrains.kotlin", "kotlin-bom").versionRef("kotlinVersion")
 
-            version("kotlin.serialization", "1.3.1")
-            library(
-                "kotlin.serialization.core",
-                "org.jetbrains.kotlinx",
-                "kotlinx-serialization-core",
-            ).versionRef("kotlin.serialization")
-            library(
-                "kotlin.serialization.json",
-                "org.jetbrains.kotlinx",
-                "kotlinx-serialization-json",
-            ).versionRef("kotlin.serialization")
+            val serialization = "1.5.1"
+            library("kotlin.serialization.core", "org.jetbrains.kotlinx", "kotlinx-serialization-core")
+                .version(serialization)
+            library("kotlin.serialization.json", "org.jetbrains.kotlinx", "kotlinx-serialization-json")
+                .version(serialization)
             bundle("kotlin.serialization", listOf("kotlin.serialization.core", "kotlin.serialization.json"))
 
-            version("coroutines", "1.6.1")
-            library("coroutines.core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").versionRef("coroutines")
+            val coroutines = "1.7.1"
+            library("coroutines.core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").version(coroutines)
 
             version("webDriverManager", "5.1.1")
             version("bouncyCastle", "1.70")
@@ -43,13 +37,10 @@ dependencyResolutionManagement {
                 ),
             )
 
-            version("log4j", "2.17.2")
-            library("log4j.api", "org.apache.logging.log4j", "log4j-api").versionRef("log4j")
-            library("log4j.to.slf4j", "org.apache.logging.log4j", "log4j-to-slf4j").versionRef("log4j")
-
-            version("slf4j", "1.7.36")
-            library("slf4j.api", "org.slf4j", "slf4j-api").versionRef("slf4j")
-            library("jul.to.slf4j", "org.slf4j", "jul-to-slf4j").versionRef("slf4j")
+            val slf4j = "2.0.7"
+            library("slf4j.api", "org.slf4j", "slf4j-api").version(slf4j)
+            library("jul.to.slf4j", "org.slf4j", "jul-to-slf4j").version(slf4j)
+            library("log4j.to.slf4j", "org.slf4j", "log4j-over-slf4j").version(slf4j)
 
             version("selenium", "4.1.4")
             library("selenium.java", "org.seleniumhq.selenium", "selenium-java").versionRef("selenium")
@@ -61,11 +52,11 @@ dependencyResolutionManagement {
             library("jsoup", "org.jsoup:jsoup:1.14.3")
             library("owner", "org.aeonbits.owner:owner:1.0.12")
 
-            version("ktor", "2.0.1")
-            library("ktor.client.core", "io.ktor", "ktor-client-core").versionRef("ktor")
-            library("ktor.client.cio", "io.ktor", "ktor-client-cio").versionRef("ktor")
-            library("ktor.client.logging", "io.ktor", "ktor-client-logging").versionRef("ktor")
-            library("ktor.client.content.negotiation", "io.ktor", "ktor-client-content-negotiation").versionRef("ktor")
+            val ktor = "2.3.1"
+            library("ktor.client.core", "io.ktor", "ktor-client-core").version(ktor)
+            library("ktor.client.cio", "io.ktor", "ktor-client-cio").version(ktor)
+            library("ktor.client.logging", "io.ktor", "ktor-client-logging").version(ktor)
+            library("ktor.client.content.negotiation", "io.ktor", "ktor-client-content-negotiation").version(ktor)
             bundle(
                 "ktor.client.base",
                 listOf(
@@ -74,12 +65,12 @@ dependencyResolutionManagement {
                     "ktor.client.logging",
                 ),
             )
-            library("ktor.server.core", "io.ktor", "ktor-server-core").versionRef("ktor")
-            library("ktor.server.cio", "io.ktor", "ktor-server-cio").versionRef("ktor")
-            library("ktor.server.content.negotiation", "io.ktor", "ktor-server-content-negotiation").versionRef("ktor")
-            library("ktor.server.locations", "io.ktor", "ktor-server-locations").versionRef("ktor")
-            library("ktor.server.status.pages", "io.ktor", "ktor-server-status-pages").versionRef("ktor")
-            library("ktor.server.serialization.json", "io.ktor", "ktor-serialization-kotlinx-json").versionRef("ktor")
+            library("ktor.server.core", "io.ktor", "ktor-server-core").version(ktor)
+            library("ktor.server.cio", "io.ktor", "ktor-server-cio").version(ktor)
+            library("ktor.server.content.negotiation", "io.ktor", "ktor-server-content-negotiation").version(ktor)
+            library("ktor.server.locations", "io.ktor", "ktor-server-locations").version(ktor)
+            library("ktor.server.status.pages", "io.ktor", "ktor-server-status-pages").version(ktor)
+            library("ktor.server.serialization.json", "io.ktor", "ktor-serialization-kotlinx-json").version(ktor)
             bundle(
                 "ktor.server",
                 listOf(
@@ -93,8 +84,8 @@ dependencyResolutionManagement {
             )
 
             library("jsitemapgenerator", "cz.jiripinkas:jsitemapgenerator:4.5")
-            library("kotlin.logging", "io.github.microutils:kotlin-logging:2.1.21")
-            library("logback", "ch.qos.logback:logback-classic:1.2.11")
+            library("kotlin.logging", "io.github.microutils:kotlin-logging:3.0.5")
+            library("logback", "ch.qos.logback:logback-classic:1.4.7")
             library("jansi", "org.fusesource.jansi:jansi:2.4.0")
 
             // test
@@ -104,8 +95,8 @@ dependencyResolutionManagement {
             library("jupiter.engine", "org.junit.jupiter", "junit-jupiter-engine").versionRef("junit")
 
             // plugins
-            plugin("ktlint", "org.jlleitschuh.gradle.ktlint").version("10.2.1")
-            plugin("detekt", "io.gitlab.arturbosch.detekt").version("1.21.0")
+            plugin("ktlint", "org.jlleitschuh.gradle.ktlint").version("11.4.0")
+            plugin("detekt", "io.gitlab.arturbosch.detekt").version("1.23.0")
         }
     }
 }

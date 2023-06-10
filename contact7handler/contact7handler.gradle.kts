@@ -31,7 +31,6 @@ tasks.jar {
 dependencies {
     implementation(platform(libs.kotlin.bom))
     implementation(libs.bundles.kotlin.serialization)
-    implementation(libs.log4j.api)
     implementation(libs.slf4j.api)
     implementation(libs.coroutines.core)
 
