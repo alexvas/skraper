@@ -51,8 +51,9 @@ internal object UrlTransformerImpl : UrlTransformer {
 
     override fun transform(contentType: ContentType, input: URI): URI {
         val query = input.query
-        if (query.isNullOrBlank())
+        if (query.isNullOrBlank()) {
             return input.maybeFixExtension(contentType)
+        }
 
         val p = input.rawPath
         val shouldBeExt = findExtension(contentType, p)
@@ -65,8 +66,9 @@ internal object UrlTransformerImpl : UrlTransformer {
 
     private fun findExtension(contentType: ContentType, input: String): String {
         val ext = extensions[contentType]
-        if (ext != null)
+        if (ext != null) {
             return ext
+        }
         return when (contentType) {
             ContentType.Application.OctetStream -> findExtensionForOctetStream(input)
             else -> error("не определено расширение для пути $input с типом содержимого $contentType")
@@ -129,8 +131,9 @@ internal object UrlTransformerImpl : UrlTransformer {
     }
 
     private fun String.maybeFixExtension(contentType: ContentType, shouldBeExt: String): String {
-        if (this == "/")
+        if (this == "/") {
             return "/index.html"
+        }
         val last = splitToSequence('/').last()
         return when (last.substringAfterLast('.')) {
             shouldBeExt -> this
@@ -151,10 +154,11 @@ internal object UrlTransformerImpl : UrlTransformer {
             .replace('%', '_')
 
     private fun String.reEncode() =
-        if (this.isEmpty())
+        if (this.isEmpty()) {
             this
-        else
+        } else {
             URLDecoder.decode(this, UTF_8).encode()
+        }
 
     private fun String.encode() =
         FsEncoder.encode(this)

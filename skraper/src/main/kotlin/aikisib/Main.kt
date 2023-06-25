@@ -46,10 +46,12 @@ suspend fun main() {
     mirrorSite(mainConfig, vault)
 }
 
+@Suppress("LongMethod")
 suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
     val mirrorDir = mainConfig.mirrorDir()
-    if (mirrorDir.exists())
+    if (mirrorDir.exists()) {
         mirrorDir.deleteRecursively()
+    }
     val mirrorPath = mirrorDir.toPath()
     mirrorPath.deleteIfExists()
     mirrorPath.createDirectories()

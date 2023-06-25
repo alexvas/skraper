@@ -3,6 +3,7 @@ package aikisib.contact7
 import mu.KLogging
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
+import java.security.MessageDigest
 import kotlin.io.path.createFile
 import kotlin.io.path.exists
 import kotlin.io.path.writeText
@@ -31,7 +32,6 @@ class Contact7HandlerImpl(
         ipAddress: String?,
         formParameters: Map<String, String?>,
     ): Feedback? {
-
         val contactFormId: Int = formParameters.intParameter("_wpcf7") ?: let {
             logger.debug { "нет идентификатора формы" }
             return null
@@ -58,17 +58,23 @@ class Contact7HandlerImpl(
             logger.debug { "нет ip-адреса" }
             return null
         }
-        val captchaValidationResult = captchaChecker.validate(captchaResponseToken, ip)
+        val dataHash = formParameters.entries
+            .map { "${it.key}=${it.value}" }
+            .reduce { acc, cur -> acc + cur }
+            .toMD5()
+
+        val captchaValidationResult = captchaChecker.validate(captchaResponseToken, ip, dataHash)
             ?: return Feedback.mailSent(
                 contactFormId = contactFormId,
                 pageId = pageId,
             )
 
-        if (!captchaValidationResult)
+        if (!captchaValidationResult) {
             return Feedback.spam(
                 contactFormId = contactFormId,
                 pageId = pageId,
             )
+        }
 
         dumpOutput(formParameters)
         val filtered = formParameters.asSequence()
@@ -78,16 +84,17 @@ class Contact7HandlerImpl(
 
         val sendTelegramResult = telegramBot.send(referer, filtered)
 
-        return if (sendTelegramResult)
+        return if (sendTelegramResult) {
             Feedback.mailSent(
                 contactFormId = contactFormId,
                 pageId = pageId,
             )
-        else
+        } else {
             Feedback.aborted(
                 contactFormId = contactFormId,
                 pageId = pageId,
             )
+        }
     }
 
     private fun dumpOutput(formParameters: Map<String, String?>) {
@@ -129,3 +136,11 @@ class Contact7HandlerImpl(
         const val IDENTITY_MAX_LENGTH = 5
     }
 }
+
+internal fun String.toMD5(): String {
+    val bytes = MessageDigest.getInstance("MD5").digest(this.toByteArray())
+    return bytes.toHex()
+}
+
+private fun ByteArray.toHex() =
+    joinToString("") { "%02x".format(it) }

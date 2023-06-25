@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Запись на пробную тренировку</title>
+    <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon"/>
+    <link rel="apple-touch-icon" href="static/images/apple-touch-icon.png"/>
+    <link rel="apple-touch-icon" sizes="76x76" href="static/images/apple-touch-icon.png"/>
+    <link rel="apple-touch-icon" sizes="152x152" href="static/images/apple-touch-icon.png"/>
+    <link rel="apple-touch-startup-image" href="static/images/apple-touch-icon.png"/>
+    <!-- Assets -->
+    <link rel="stylesheet" href="static/css/form.css" type="text/css" media="all" onerror="this.loaderr='y';"/>
+    <script src="static/js/jquery-3.7.0.min.js" charset="UTF-8" onerror="this.loaderr='y';"></script>
+    <script src="static/js/form_sender.js" charset="UTF-8"></script>
+    <script src="https://smartcaptcha.yandexcloud.net/captcha.js" defer></script>
+</head>
+<body class="f-body">
+<div class="f-container">
+    <div class="f-cover-filter">
+        <div id="rec477993010" class="f-width">
+            <div class="f-title">Записаться на пробную тренировку</div>
+            <form id="f-form" name="signUpForm" action="" method="POST">
+                <div class="f-form-inputsbox">
+                    <div class="f-input-group f-input-group_nm" data-input-lid="1495646533382">
+                        <div class="t-input-block">
+                            <input
+                                    type="text"
+                                    autocomplete="name"
+                                    id="name"
+                                    name="Name"
+                                    class="t-input"
+                                    value=""
+                                    placeholder="Имя"
+                            />
+                        </div>
+                    </div>
+                    <div class="f-input-group f-input-group_ph" data-input-lid="1495646545048">
+                        <div class="t-input-block">
+                            <input
+                                    type="tel"
+                                    autocomplete="tel"
+                                    id="phone"
+                                    name="Phone"
+                                    data-phonemask-init="no"
+                                    data-phonemask-id="477993010"
+                                    data-phonemask-lid="1495646545048"
+                                    data-phonemask-maskcountry="RU"
+                                    class="t-input js-phonemask-input"
+                                    value=""
+                                    placeholder="+7(999)999-9999"
+                            />
+                        </div>
+                    </div>
+                    <div class="f-input-group f-input-group_em" data-input-lid="1495646567135">
+                        <div class="t-input-block">
+                            <input
+                                    type="text"
+                                    autocomplete="email"
+                                    id="email"
+                                    name="Email"
+                                    class="t-input"
+                                    value=""
+                                    placeholder="E-mail"
+                            />
+                        </div>
+                    </div>
+                    <div style="height: 100px"
+                         id="captcha-container"
+                         class="smart-captcha"
+                         data-sitekey="i4r4xgDQmIjC4fICOBQJEtpJGOOMuer0Q8BCDHxA"
+                    ></div>
+                    <div class="f-form-submit">
+                        <button type="submit" class="f-submit">Записаться на тренировку</button>
+                    </div>
+                </div>
+            </form>
+            <div id="validationErrorMessage" class="f-form-error" style="display: none">
+                Укажите пожалуйста свой телефон или электропочту.
+            </div>
+            <div id="thanks" class="f-form-thanks" style="display: none">
+            </div>
+            <div id="failed" class="f-form-failed" style="display: none">
+                Что-то пошло не так. Попробуйте снова чуть позже,
+                или позвоните нам:
+                <a href="tel:+7 961 218-14-22" title="Позвоните нам" target="_blank" rel="nofollow noopener">+7 961 218-14-22</a>.
+            </div>
+            <div class="f-form-bottom-text">
+                Мы используем Ваши персональные данные только,
+                чтобы связаться с Вами по вопросу занятий Айкидо.
+                Мы не будем передавать эти данные никаким третьим лицам.
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    if (!document.getElementById("t-phonemask-script")) {
+        (function (d, w, o) {
+            var n = d.getElementsByTagName(o)[0],
+                    s = d.createElement(o),
+                    f = function () {
+                        n.parentNode.insertBefore(s, n);
+                    };
+            s.type = "text/javascript";
+            s.async = true;
+            s.id = "t-phonemask-script";
+            s.src = "static/js/phone-mask-1.1.min.js";
+            if (w.opera == "[object Opera]") {
+                d.addEventListener("DOMContentLoaded", f, false);
+            } else {
+                f();
+            }
+        })(document, window, "script");
+    } else {
+        t_onReady(function () {
+            t_onFuncLoad("t_form_phonemask_load", function () {
+                const phoneMasks = document.querySelectorAll('#rec477993010 [data-phonemask-lid="1495646545048"]');
+                t_form_phonemask_load(phoneMasks);
+            });
+        });
+    }
+</script>
+</body>
+</html>

@@ -4,8 +4,10 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.Application
 import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
@@ -30,23 +32,26 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientCon
 
 private val logger = logger("contact7")
 
+private const val X_REAL_IP = "X-Real-IP"
+
 suspend fun main() {
     Thread.setDefaultUncaughtExceptionHandler(DefaultUncaughtExceptionHandler())
     val config = createConfig(Contact7Config::class)
 
     val httpClient = createHttpClient()
-    val validator: Contact7FormValidator = Contact7FormValidatorImpl
+    val contact7FormValidator: Contact7FormValidator = Contact7FormValidatorImpl
     val captchaChecker: CaptchaChecker = CaptchaCheckerImpl(config.yaCaptchaSecret(), httpClient)
     val telegramBot: TelegramBot = TelegramBotImpl(config.telegramBotId(), config.telegramChatId(), httpClient)
 
-    val handler: Contact7Handler = Contact7HandlerImpl(validator, captchaChecker, telegramBot)
+    val contact7handler: Contact7Handler = Contact7HandlerImpl(contact7FormValidator, captchaChecker, telegramBot)
 
-    embeddedServer(
-        factory = CIO,
-        host = config.serverHost(),
-        port = config.serverPort(),
-    ) {
+    val tildaHandler: TildaHandler = TildaHandlerImpl(captchaChecker, telegramBot)
+
+    fun Application.module() {
         install(StatusPages) {
+            status(HttpStatusCode.NotFound) { call, status ->
+                call.respondText(text = "404: Page Not Found (Нетути)", status = status)
+            }
             exception<Throwable> { call, cause ->
                 logger.error(cause) { "Внутренняя ошибка сервера" }
                 call.respondText(text = "500: внутренняя ошибка сервера", status = HttpStatusCode.InternalServerError)
@@ -65,15 +70,33 @@ suspend fun main() {
             }
 
             post("/wp-json/contact-form-7/v1/contact-forms/{formNum}/feedback") {
-                val referer = call.request.header("referer")
-                val ipAddress = call.request.header("X-Real-IP")
+                val referer = call.request.header(HttpHeaders.Referrer)
+                val ipAddress = call.request.header(X_REAL_IP)
 
                 val formParameters = call.receiveParameters().toMap().mapValues { it.value.firstOrNull() }
-                val feedback = handler.handleRequest(referer, ipAddress, formParameters) ?: return@post
+                val feedback = contact7handler.handleRequest(referer, ipAddress, formParameters) ?: return@post
                 call.respond(feedback)
             }
+
+            post("/do_apply") {
+                val ipAddress = call.request.header(X_REAL_IP)
+                val formParameters = call.receiveParameters().toMap().mapValues { it.value.firstOrNull() }
+                val status = if (tildaHandler.handleRequest(ipAddress, formParameters)) {
+                    HttpStatusCode.OK
+                } else {
+                    HttpStatusCode.BadRequest
+                }
+                call.respond(status)
+            }
         }
-    }.start(wait = true)
+    }
+
+    embeddedServer(
+        factory = CIO,
+        host = config.serverHost(),
+        port = config.serverPort(),
+        module = { module() },
+    ).start(wait = true)
 }
 
 private fun createHttpClient() =

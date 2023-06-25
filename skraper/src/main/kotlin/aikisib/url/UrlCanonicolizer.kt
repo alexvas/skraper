@@ -48,9 +48,10 @@ internal object UrlCanonicolizerImpl : UrlCanonicolizer {
     private fun normalize(parent: URI, originalUrl: String): URI {
         val withCanonicalPath = URI.create(originalUrl)
             .normalize()
-        if (withCanonicalPath.isAbsolute)
+        if (withCanonicalPath.isAbsolute) {
             return withCanonicalPath
                 .withTrailingSlashFixed()
+        }
         require(parent.isAbsolute) { "Родительский путь должен быть абсолютным, а не относительным: $parent" }
         return parent
             .withEmptyPathFixed()
@@ -62,17 +63,19 @@ internal object UrlCanonicolizerImpl : UrlCanonicolizer {
      * Если путь пустой, устанавливаем его в единственный символ '/'.
      */
     private fun URI.withEmptyPathFixed() =
-        if (rawPath.isNullOrEmpty())
+        if (rawPath.isNullOrEmpty()) {
             withPath("/")
-        else
+        } else {
             this
+        }
 
     /**
      * Удаляем завершающий слэш в пути, если такой имеется.
      */
     private fun URI.withTrailingSlashFixed(): URI {
-        if (rawPath?.endsWith("/") != true || rawPath == "/")
+        if (rawPath?.endsWith("/") != true || rawPath == "/") {
             return this
+        }
 
         return URLBuilder().takeFrom(this)
             .also { urlBuilder ->
@@ -112,9 +115,10 @@ private fun URI.encodedPathSegments() =
         .map { it.reEncode() }
         .toList()
 
-private fun String.reEncode() = if (isEmpty())
+private fun String.reEncode() = if (isEmpty()) {
     this
-else
+} else {
     URLDecoder.decode(this, UTF_8)
         .encodeURLPath()
         .replace("/", "%2F")
+}

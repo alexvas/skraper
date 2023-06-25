@@ -57,14 +57,16 @@ internal object UrlRelativizerImpl : UrlRelativizer {
         fragment: String?,
     ): URI {
         val path = resultChunks.joinToString(separator = "/")
-        val pathWithQuery = if (query.isNullOrBlank())
+        val pathWithQuery = if (query.isNullOrBlank()) {
             path
-        else
+        } else {
             "$path?$query"
-        val pathWithQueryAndFragment = if (fragment.isNullOrBlank())
+        }
+        val pathWithQueryAndFragment = if (fragment.isNullOrBlank()) {
             pathWithQuery
-        else
+        } else {
             "$pathWithQuery#$fragment"
+        }
 
         return URI(pathWithQueryAndFragment)
     }

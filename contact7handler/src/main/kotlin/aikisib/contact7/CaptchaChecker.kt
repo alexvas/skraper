@@ -17,7 +17,7 @@ interface CaptchaChecker {
      * @param captchaResponseToken - ответ Яндексовой капчи, как его прислал пользователь.
      * @return true, если не-спам. false, если не-спам. null, если отослан повторный запрос с валидным токеном.
      */
-    suspend fun validate(captchaResponseToken: String, ipAddress: String): Boolean?
+    suspend fun validate(captchaResponseToken: String, ipAddress: String, dataHash: String): Boolean?
 }
 
 internal class CaptchaCheckerImpl(
@@ -28,14 +28,15 @@ internal class CaptchaCheckerImpl(
     private val localResultCache = LruResultCache<ResultForIp>()
     private val seenCache = LruResultCache<Int>()
 
-    override suspend fun validate(captchaResponseToken: String, ipAddress: String) =
+    override suspend fun validate(captchaResponseToken: String, ipAddress: String, dataHash: String) =
         lock.withLock {
-            logger.debug { "Проверяем токен $captchaResponseToken для ip $ipAddress" }
+            logger.trace { "Проверяем токен $captchaResponseToken для ip $ipAddress" }
             val seen = seenCache.putIfAbsent(ipAddress, 1)
             if (seen != null) {
                 seenCache[ipAddress] = seen + 1
                 if (seen > MAX_SEEN) {
                     // ограничиваем сообщения с одного и того же IP-адреса
+                    logger.trace { "Превышен лимит сообщений с адреса $ipAddress" }
                     return@withLock false
                 }
             }
@@ -44,14 +45,24 @@ internal class CaptchaCheckerImpl(
             when {
                 // Новый токен.
                 savedResult == null -> validateWithYandex(captchaResponseToken, ipAddress).also { yaDecision ->
-                    localResultCache[captchaResponseToken] = ResultForIp(ipAddress, yaDecision)
+                    localResultCache[captchaResponseToken] = ResultForIp(ipAddress, dataHash, yaDecision)
                 }
-                // отправили прежний токен с отрицательным результатом
-                !savedResult.result -> false
-                // дублирующая отправка той же формы
-                ipAddress == savedResult.ipAddress -> null
-                // Подделаный токен. Уже использованный токен с другого IP-адреса
-                else -> false
+                !savedResult.result -> {
+                    logger.debug { "Перед этим результат для $ipAddress и токена был отрицательным" }
+                    false
+                }
+                dataHash == savedResult.dataHash -> {
+                    logger.debug { "Дублирующая отправка той же формы для $ipAddress" }
+                    null
+                }
+                ipAddress != savedResult.ipAddress -> {
+                    logger.debug { "Подделаный токен. Уже использованный токен c IP-адреса ${savedResult.ipAddress} попробовали использовать через $ipAddress." }
+                    false
+                }
+                else -> {
+                    logger.debug { "Скорректированная форма с тем же токеном" }
+                    true
+                }
             }
         }
 
@@ -68,6 +79,7 @@ internal class CaptchaCheckerImpl(
             logger.info { "Валидация провалена. ${parsed.message}" }
             return false
         }
+        logger.info { "Яндекс валидировал ОК. ${parsed.message}" }
         return true
     }
 
@@ -75,8 +87,8 @@ internal class CaptchaCheckerImpl(
         "https://captcha-api.yandex.ru/validate?secret=$yaCaptchaSecret&ip=$ipAddress&token=$token"
 
     companion object : KLogging() {
-        // не больше 20 сообщений с одного IP-адреса
-        private const val MAX_SEEN = 20
+        // не больше 5 сообщений с одного IP-адреса
+        private const val MAX_SEEN = 5
     }
 }
 
@@ -99,5 +111,6 @@ private class LruResultCache<T> : LinkedHashMap<String, T>(MAX_SIZE, LOAD_FACTOR
 
 private data class ResultForIp(
     val ipAddress: String,
+    val dataHash: String,
     val result: Boolean,
 )

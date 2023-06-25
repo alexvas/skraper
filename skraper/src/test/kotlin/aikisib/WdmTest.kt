@@ -50,10 +50,11 @@ class WdmTest {
                 .joinToString(separator = "\n")
             with(File("/tmp/aikisib.links.txt")) {
                 val creationResult = createNewFile()
-                if (creationResult)
+                if (creationResult) {
                     writeText(hrefs)
-                else
+                } else {
                     System.err.println("failed to create /tmp/aikisib.links.txt")
+                }
             }
             quit()
         }

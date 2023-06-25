@@ -22,6 +22,9 @@ application {
         include("contact7.properties")
         into("etc")
     }
+    applicationDistribution.from("apply") {
+        into("apply")
+    }
 }
 
 tasks.jar {

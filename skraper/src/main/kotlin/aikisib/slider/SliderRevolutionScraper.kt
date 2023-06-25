@@ -74,8 +74,9 @@ class SliderRevolutionScraperImpl(
         try {
             doLoginIntoWordpress(wordpressLoginPath, username, password)
         } catch (e: RedirectResponseException) {
-            if (e.response.status == HttpStatusCode.Found)
+            if (e.response.status == HttpStatusCode.Found) {
                 return true
+            }
         }
         return false
     }

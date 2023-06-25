@@ -57,12 +57,15 @@ private abstract class LinkExtractorBase(
     // исключения здесь обрабатываются адекватно
     @Suppress("TooGenericExceptionCaught", "SwallowedException", "ReturnCount")
     fun MutableMap<String, URI>.maybeAdd(pageUri: URI, href: String, from: Path) {
-        if (href.isEmpty())
+        if (href.isEmpty()) {
             return
-        if (ignoredPrefixes.any { prefix -> href.startsWith(prefix) })
+        }
+        if (ignoredPrefixes.any { prefix -> href.startsWith(prefix) }) {
             return
-        if (ignoredSuffixes.any { suffix -> href.endsWith(suffix) })
+        }
+        if (ignoredSuffixes.any { suffix -> href.endsWith(suffix) }) {
             return
+        }
         val canonical = try {
             uriCanonicolizer.canonicalize(pageUri, href)
         } catch (e: IllegalArgumentException) {
@@ -175,10 +178,10 @@ private class CssLinkExtractor(
 }
 
 internal fun String?.extractLinks() =
-    if (isNullOrBlank())
+    if (isNullOrBlank()) {
         sequenceOf()
-    else
-        urlRegex.findAll(this).asSequence()
+    } else {
+        urlRegex.findAll(this)
             .map { m ->
                 m.groupValues.asSequence()
                     .drop(1)
@@ -186,6 +189,7 @@ internal fun String?.extractLinks() =
                     .firstOrNull()
             }
             .filterNotNull()
+    }
 
 private val urlRegex = Regex("""url\((?:'([^']++)'|"([^"]++)"|([^)]++))\)""")
 

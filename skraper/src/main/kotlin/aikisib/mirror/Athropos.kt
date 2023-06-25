@@ -13,7 +13,8 @@ internal object AthroposImpl : Athropos {
     override fun removeIfLarger(sourcePath: Path, targetPath: Path) {
         val sourceSize = sourcePath.fileSize()
         val targetSize = targetPath.fileSize()
-        if (targetSize >= sourceSize)
+        if (targetSize >= sourceSize) {
             targetPath.deleteExisting()
+        }
     }
 }

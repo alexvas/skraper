@@ -85,8 +85,9 @@ internal class RecursiveScraperImpl(
         for ((_, uri) in filteredLinks) {
             val prev = linkRepo.put(uri.norm(), Unit)
             val notSeen = prev == null
-            if (notSeen)
+            if (notSeen) {
                 downloadItem(scope, uri)
+            }
         }
     }
 
@@ -158,8 +159,9 @@ internal class RecursiveScraperImpl(
 
     private fun makeWebPCopy(toRoot: Path) {
         for ((originalDescription, transformed) in transformCache) {
-            if (originalDescription.type !in IMAGES_TO_BE_CONVERTED)
+            if (originalDescription.type !in IMAGES_TO_BE_CONVERTED) {
                 continue
+            }
             val relative = relativizer.relativize(fromRoot, transformed, null)
             val targetPath = toRoot.resolve(relative.toString())
             targetPath.parent.createDirectories()

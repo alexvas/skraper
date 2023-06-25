@@ -27,8 +27,9 @@ internal class FromLinkFilterImpl(
         anyRootList.forEach { anyRoot ->
             val inputSameScheme = uri.sameSchemeAs(anyRoot)
             val maybeRelative = anyRoot.relativize(inputSameScheme)
-            if (maybeRelative != inputSameScheme)
+            if (maybeRelative != inputSameScheme) {
                 return link to uri.deAlias()
+            }
         }
         return null
     }
@@ -38,13 +39,16 @@ internal class FromLinkFilterImpl(
         sameOrigin(rootMain)
 }
 
-internal fun URI.sameOrigin(ethalone: URI) = URI(
-    ethalone.scheme,
-    ethalone.userInfo,
-    ethalone.host,
-    ethalone.port,
-    path, query, fragment
-)
+internal fun URI.sameOrigin(ethalone: URI) =
+    URI(
+        ethalone.scheme,
+        ethalone.userInfo,
+        ethalone.host,
+        ethalone.port,
+        path,
+        query,
+        fragment,
+    )
 
 private fun URI.sameSchemeAs(anyRoot: URI) =
     URI(

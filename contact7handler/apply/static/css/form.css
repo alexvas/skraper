@@ -1,0 +1,224 @@
+*,
+*:before,
+*:after {
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+}
+
+html, .f-body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.f-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/do_belt.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.f-cover-filter {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(41, 34, 28, 0.7);
+}
+
+.f-width {
+    font-family: 'Roboto', Arial, sans-serif;
+    padding: 0 20px;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 760px;
+    overflow: hidden;
+}
+
+.f-title {
+    font-weight: 600;
+    font-size: 42px;
+    line-height: 1.23;
+    text-align: center;
+    color: #fff;
+    margin: 30px 0 40px;
+}
+
+.f-form-bottom-text, .f-form-error, .f-form-failed, .f-form-thanks {
+    max-width: 720px;
+    font-weight: 300;
+    font-size: 15px;
+    line-height: 1.55;
+    text-align: center;
+    margin: 30px auto;
+    backdrop-filter: blur(3px);
+}
+
+.f-form-bottom-text {
+    color: #fff;
+    font-size: 14px;
+}
+
+.f-form-error, .f-form-failed {
+    color: #b83506;
+    padding: 5px;
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+.f-form-failed {
+    font-weight: bold;
+}
+
+.f-form-thanks {
+    font-weight: bold;
+    padding: 10px;
+    background-color: rgba(0, 255, 0, 0.3);
+    font-size: 20px;
+}
+
+.f-form-inputsbox {
+    max-width: 560px;
+    max-height: 15000px;
+    margin: 0 auto;
+    text-align: left;
+    -webkit-transition: max-height 0.3s cubic-bezier(.19, 1, .22, 1);
+    transition: max-height 0.3s cubic-bezier(.19, 1, .22, 1);
+}
+
+.f-input-group {
+    margin-bottom: 20px;
+}
+
+.t-input-error {
+    border: 3px solid #b83506;
+}
+
+.t-input-block {
+    border-radius: 7px;
+    -moz-border-radius: 7px;
+    -webkit-border-radius: 7px;
+}
+
+.t-input {
+    color: #000000;
+    background-color: #ffffff;
+    border-radius: 7px;
+    -moz-border-radius: 7px;
+    -webkit-border-radius: 7px;
+    -webkit-appearance: none;
+    margin: 0;
+    height: 60px;
+    padding: 0 20px;
+    font-size: 16px;
+    line-height: 1.33;
+    width: 100%;
+    border: 0 none;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.t-input-phonemask__wrap {
+    color: #000000;
+    background-color: #ffffff;
+    border-radius: 7px;
+    -moz-border-radius: 7px;
+    -webkit-border-radius: 7px;
+    position: relative;
+    display: -ms-flexbox;
+    display: -webkit-box;
+    display: flex;
+}
+
+.f-form-submit {
+    display: block;
+    text-align: center;
+    height: 100%;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.f-submit {
+    color: #ffffff;
+    background-color: #b83506;
+    border-radius: 7px;
+    -moz-border-radius: 7px;
+    -webkit-border-radius: 7px;
+    position: relative;
+    padding: 0 20px;
+    width: 100%;
+    text-align: center;
+    height: 60px;
+    border: 0 none;
+    font-size: 16px;
+    -webkit-appearance: none;
+    font-weight: 700;
+    white-space: nowrap;
+    background-image: none;
+    cursor: pointer;
+    margin: 0;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    outline: none;
+}
+
+@media screen and (max-width: 1200px) {
+    .f-title {
+        font-size: 38px;
+    }
+}
+
+@media screen and (max-width: 640px) {
+    .f-title {
+        font-size: 30px;
+        margin-bottom: 18px;
+    }
+
+    .f-form-bottom-text {
+        font-size: 12px;
+        line-height: 1.45;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .f-input-group {
+        margin-bottom: 15px;
+    }
+}
+
+.t-btn_sending {
+    opacity: .5
+}
+
+@keyframes t-submit-spinner {
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+.f-form .t-submit.t-btn_sending, .t-btn.t-btn_sending {
+    color: transparent !important
+}
+
+.t-btn_sending:before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+    margin-left: -15px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    border-top-color: #333;
+    animation: t-submit-spinner .6s linear infinite
+}

@@ -64,8 +64,9 @@ internal class TelegramBotImpl(
         content: Map<String, String>,
     ): MessageToSend {
         val output = buildList {
-            if (referer != null) {
-                add("URL => $referer")
+            val landing = referer ?: content["landing"]
+            if (landing != null) {
+                add("URL => $landing")
             }
             content.filterNot {
                 it.key.startsWith("_wpcf7")
