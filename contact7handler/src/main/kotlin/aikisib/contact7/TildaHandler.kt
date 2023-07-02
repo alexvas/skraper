@@ -59,7 +59,7 @@ class TildaHandlerImpl(
             .filterNotNull()
             .toMap()
 
-        telegramBot.send(null, filtered)
+        telegramBot.send(filtered)
         return true
     }
 

@@ -1,0 +1,55 @@
+# Cкопируйте файл, отбросив расширение ".example".
+
+main {
+    # Корневой URL публичного сайта, который надо отзеркалить.
+    rootMain: "http://localhost:7080"
+
+    # Альтернативные псевдонимы сайта, куда могут ссылаться ресурсы.
+    rootAliases: ["https://aikisib.ru", "https://staging.aikisib.ru"]
+
+    # Целевой URL, который применяется для
+    # <link rel="canonical" href="bla-bla-bla">,
+    # где href должен быть абсолютной ссылкой.
+    canonicalHref: "https://aikisib.ru"
+
+    # Ненужные для зеркалирования префиксы.
+    ignoredPrefixes: [/comments, /wp-json, /wp-admin, /xmlrpc, "/?p", /wp-login]
+
+    # Ненужные для зеркалирования суффиксы.
+    ignoredSuffixes: [xml]
+
+    # Ненужные для зеркалирования типы содержимого.
+    ignoredContentTypes: ["application/rss+xml"]
+
+    # Путь к утилите cwebp.
+    cwebpExecutable: /bin/cwebp
+
+    # Путь ко временной директории для скачиваемых файлов.
+    tempDir: /tmp/aikisib_input
+
+    # Путь к целевой директории, куда сохранять зеркалируемые файлы.
+    # Директория очищается вначале работы приложения.
+    mirrorDir: /tmp/aikisib_mirror
+}
+
+slider {
+    # Корневой URL публичного сайта.
+    publicUrl: "https://aikisib.ru"
+
+    # Корневой URL сайта, где доступна админка
+    adminUrl: "https://aikisib.ru"
+
+    # Идентификаторы слайдеров, которые хочется экспортировать.
+    sliderIds: [5]
+}
+
+vault {
+    # Путь к страничке входа в админку вордпресса.
+    wordpressLoginPath: /wp-admin/
+
+    # Имя пользователя с правами администратора.
+    username: admin
+
+    # Пароль пользователя с правами администратора.
+    password: pAsSw0rD
+}

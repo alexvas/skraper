@@ -14,7 +14,9 @@ dependencyResolutionManagement {
                 .version(serialization)
             library("kotlin.serialization.json", "org.jetbrains.kotlinx", "kotlinx-serialization-json")
                 .version(serialization)
-            bundle("kotlin.serialization", listOf("kotlin.serialization.core", "kotlin.serialization.json"))
+            library("kotlin.serialization.hocon", "org.jetbrains.kotlinx", "kotlinx-serialization-hocon")
+                .version(serialization)
+            bundle("kotlin.serialization", listOf("kotlin.serialization.core", "kotlin.serialization.json", "kotlin.serialization.hocon"))
 
             val coroutines = "1.7.1"
             library("coroutines.core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").version(coroutines)
@@ -50,7 +52,6 @@ dependencyResolutionManagement {
                 "selenium-chrome-driver",
             ).versionRef("selenium")
             library("jsoup", "org.jsoup:jsoup:1.14.3")
-            library("owner", "org.aeonbits.owner:owner:1.0.12")
 
             val ktor = "2.3.1"
             library("ktor.client.core", "io.ktor", "ktor-client-core").version(ktor)
@@ -71,6 +72,7 @@ dependencyResolutionManagement {
             library("ktor.server.locations", "io.ktor", "ktor-server-locations").version(ktor)
             library("ktor.server.status.pages", "io.ktor", "ktor-server-status-pages").version(ktor)
             library("ktor.server.serialization.json", "io.ktor", "ktor-serialization-kotlinx-json").version(ktor)
+            library("ktor.thymeleaf", "io.ktor", "ktor-server-thymeleaf").version(ktor)
             bundle(
                 "ktor.server",
                 listOf(

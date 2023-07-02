@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     // kotlin support
     alias(libs.plugins.kotlin.jvm)
@@ -22,8 +24,8 @@ application {
         include("contact7.properties")
         into("etc")
     }
-    applicationDistribution.from("apply") {
-        into("apply")
+    applicationDistribution.from("src/main/resources/apply/static") {
+        into("static")
     }
 }
 
@@ -36,9 +38,9 @@ dependencies {
     implementation(libs.bundles.kotlin.serialization)
     implementation(libs.slf4j.api)
     implementation(libs.coroutines.core)
+    implementation(libs.ktor.thymeleaf)
 
     // configuration
-    implementation(libs.owner)
     implementation(libs.bundles.ktor.server)
     implementation(libs.bundles.ktor.client.base)
     implementation(libs.ktor.client.content.negotiation)
@@ -60,4 +62,10 @@ dependencies {
     testRuntimeOnly(libs.log4j.to.slf4j)
     testRuntimeOnly(libs.logback)
     testRuntimeOnly(libs.jansi)
+}
+
+tasks {
+    withType<KotlinCompile> {
+        kotlinOptions.freeCompilerArgs += "-opt-in=kotlinx.serialization.ExperimentalSerializationApi"
+    }
 }

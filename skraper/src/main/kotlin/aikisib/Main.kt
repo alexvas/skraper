@@ -16,7 +16,6 @@ import aikisib.mirror.SitemapGenerator
 import aikisib.mirror.SitemapGeneratorImpl
 import aikisib.mirror.WebpEncoder
 import aikisib.mirror.WebpEncoderImpl
-import aikisib.slider.SliderConfig
 import aikisib.slider.SliderRevolutionScraper
 import aikisib.slider.SliderRevolutionScraperImpl
 import aikisib.url.UrlCanonicolizer
@@ -25,58 +24,60 @@ import aikisib.url.UrlRelativizer
 import aikisib.url.UrlRelativizerImpl
 import aikisib.url.UrlTransformer
 import aikisib.url.UrlTransformerImpl
+import com.typesafe.config.ConfigFactory
 import io.ktor.http.ContentType
+import kotlinx.serialization.hocon.Hocon
+import kotlinx.serialization.hocon.decodeFromConfig
 import mu.KLoggable
-import org.aeonbits.owner.Config
-import org.aeonbits.owner.ConfigFactory
 import java.io.File
 import java.lang.Thread.setDefaultUncaughtExceptionHandler
 import java.net.URI
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
-import kotlin.reflect.KClass
 import kotlin.system.exitProcess
 
 suspend fun main() {
     setDefaultUncaughtExceptionHandler(DefaultUncaughtExceptionHandler())
-    val mainConfig = createConfig(MainConfig::class)
-    val vault = createConfig(Vault::class)
+    val config = ConfigFactory.load("app.hocon.conf")
+    val appConfig: AppConfig = Hocon.decodeFromConfig(config)
 
 //    exportSliderRevolutionModules()
-    mirrorSite(mainConfig, vault)
+    mirrorSite(appConfig)
 }
 
 @Suppress("LongMethod")
-suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
-    val mirrorDir = mainConfig.mirrorDir()
+suspend fun mirrorSite(appConfig: AppConfig) {
+    val mainConfig = appConfig.main
+    val mirrorDir = mainConfig.mirrorDir
     if (mirrorDir.exists()) {
         mirrorDir.deleteRecursively()
     }
     val mirrorPath = mirrorDir.toPath()
     mirrorPath.deleteIfExists()
     mirrorPath.createDirectories()
-    val toRoot = mirrorPath.resolve(mainConfig.rootMain().host.toString().replace('.', '_'))
+    val toRoot = mirrorPath.resolve(mainConfig.rootMain.host.toString().replace('.', '_'))
     toRoot.createDirectories()
     val toRootWebp = toRoot.resolve("webp")
     toRootWebp.createDirectories()
-    val tempPath = mainConfig.tempDir().toPath()
+    val tempPath = mainConfig.tempDir.toPath()
     tempPath.createDirectories()
 
     // Инжекция зависимостей для бедных.
     val downloader: Downloader = DownloaderImpl(
         tempPath = tempPath,
-        ignoredContentTypes = mainConfig.ignoredContentTypes().map { ContentType.parse(it) }.toSet(),
+        ignoredContentTypes = mainConfig.ignoredContentTypes.map { ContentType.parse(it) }.toSet(),
     )
     val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
-    val rootMain = canonicolizer.canonicalize(URI("."), mainConfig.rootMain().toString())
-    val rootAliases: List<URI> = mainConfig.rootAliases().map { canonicolizer.canonicalize(URI("."), it.toString()) }
-    val canonicalHref = canonicolizer.canonicalize(URI("."), mainConfig.canonicalHref().toString())
+    val rootMain = canonicolizer.canonicalize(URI("."), mainConfig.rootMain.toString())
+    val rootAliases: List<URI> = mainConfig.rootAliases.map { canonicolizer.canonicalize(URI("."), it.toString()) }
+    val canonicalHref = canonicolizer.canonicalize(URI("."), mainConfig.canonicalHref.toString())
     val relativizer: UrlRelativizer = UrlRelativizerImpl
     val transformer: UrlTransformer = UrlTransformerImpl
-    val ignoredPrefixes = (mainConfig.ignoredPrefixes() + vault.wordpressLoginPath())
+    val vault = appConfig.vault
+    val ignoredPrefixes = (mainConfig.ignoredPrefixes + vault.wordpressLoginPath)
         .map { canonicolizer.canonicalize(rootMain, it.trim()).toString() }
         .toSet()
-    val ignoredSuffixes = mainConfig.ignoredSuffixes()
+    val ignoredSuffixes = mainConfig.ignoredSuffixes
         .map { canonicolizer.canonicalize(rootMain, it.trim()).toString() }
         .toSet()
 
@@ -87,7 +88,7 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
     )
     val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootMain, rootAliases)
     val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(rootMain, canonicalHref)
-    val webpEncoder: WebpEncoder = WebpEncoderImpl(mainConfig.cwebpExecutable())
+    val webpEncoder: WebpEncoder = WebpEncoderImpl(mainConfig.cwebpExecutable)
     val athropos: Athropos = AthroposImpl
     val sitemapGenerator: SitemapGenerator = SitemapGeneratorImpl(
         canonicalHref = canonicalHref,
@@ -114,14 +115,14 @@ suspend fun mirrorSite(mainConfig: MainConfig, vault: Vault) {
 }
 
 @Suppress("UnusedPrivateMember")
-private suspend fun exportSliderRevolutionModules(sliderConfig: SliderConfig) {
-    val vault: Vault = createConfig(Vault::class)
-    val sliderRevolutionScraper: SliderRevolutionScraper = SliderRevolutionScraperImpl(sliderConfig.adminUrl())
+private suspend fun exportSliderRevolutionModules(appConfig: AppConfig) {
+    val sliderRevolutionScraper: SliderRevolutionScraper = SliderRevolutionScraperImpl(appConfig.slider.adminUrl)
 
+    val vault = appConfig.vault
     val success = sliderRevolutionScraper.loginIntoWordpress(
-        wordpressLoginPath = vault.wordpressLoginPath(),
-        username = vault.username(),
-        password = vault.password(),
+        wordpressLoginPath = vault.wordpressLoginPath,
+        username = vault.username,
+        password = vault.password,
     )
 
     if (!success) {
@@ -129,7 +130,7 @@ private suspend fun exportSliderRevolutionModules(sliderConfig: SliderConfig) {
         exitProcess(1)
     }
 
-    sliderConfig.sliderIds().forEach {
+    appConfig.slider.sliderIds.forEach {
         val nonce = sliderRevolutionScraper.navigateToSliderRevolutionPage()
         exportModuleToHtml(sliderRevolutionScraper, it, nonce)
     }
@@ -145,9 +146,6 @@ private suspend fun exportModuleToHtml(
     UnzipFile.unzip(target, zip)
     println("module $id successfully exported to $target")
 }
-
-private fun <T : Config> createConfig(kClass: KClass<T>): T =
-    ConfigFactory.create(kClass.java)
 
 /**
  * Last resort exception handler

@@ -1,6 +1,9 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     // kotlin support
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     // linters
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
@@ -16,15 +19,13 @@ application {
 dependencies {
     implementation(platform(libs.kotlin.bom))
 
+    implementation(libs.kotlin.serialization.hocon)
     implementation(libs.bundles.web.driver.manager)
     implementation(libs.slf4j.api)
 
     implementation(libs.selenium.java)
     implementation(libs.jsoup)
     implementation(libs.coroutines.core)
-
-    // configuration
-    implementation(libs.owner)
 
     implementation(libs.bundles.ktor.client.base)
     implementation(libs.jsitemapgenerator)
@@ -47,4 +48,10 @@ dependencies {
     testRuntimeOnly(libs.log4j.to.slf4j)
     testRuntimeOnly(libs.logback)
     testRuntimeOnly(libs.jansi)
+}
+
+tasks {
+    withType<KotlinCompile> {
+        kotlinOptions.freeCompilerArgs += "-opt-in=kotlinx.serialization.ExperimentalSerializationApi"
+    }
 }

@@ -15,6 +15,10 @@
     <script src="static/js/jquery-3.7.0.min.js" charset="UTF-8" onerror="this.loaderr='y';"></script>
     <script src="static/js/form_sender.js" charset="UTF-8"></script>
     <script src="https://smartcaptcha.yandexcloud.net/captcha.js" defer></script>
+    <!-- Yandex.Metrika counter -->
+    <script th:replace="~{ya_counter :: script(${ya_counter_num})}"></script>
+    <noscript th:replace="~{ya_counter :: noscript(${ya_counter_num})}"></noscript>
+    <!-- /Yandex.Metrika counter -->
 </head>
 <body class="f-body">
 <div class="f-container">

@@ -1,0 +1,30 @@
+# Cкопируйте файл, отбросив расширение ".example" в /etc/contact7handler/app.hocon.conf.
+
+# Где сервер будет отдавать страничку с формой и принимать POST-запросы.
+server {
+    host: 127.0.0.1
+    port: 9332
+}
+
+# Интеграция с Яндексом
+yandex {
+    # Секрет капчи
+    secret: 1111111sleep222sleep33333
+
+    # Счётчик посещения страницы
+    counter {
+        "aikisib.ru": 11111111,
+        "deti.aikisib.ru": 222222,
+        "rus.aikisib.ru": 33333,
+        "nsu.aikisib.ru": 4444444,
+        "deti-nsu.aikisib.ru": 55555555,
+    }
+}
+
+# Интеграция с Телеграмом.
+telegram {
+    # Идентификатор бота, cмотри @BotFather.
+    botId: aaaaaa-bbbb-1111-333cde
+    # Идентификатор канала Телеги, куда надо пересылать сообщения из ContactForm7 (Get IDs Bot).
+    chatId: -089348343
+}

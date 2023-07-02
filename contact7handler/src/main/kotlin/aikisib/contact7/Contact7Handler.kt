@@ -11,7 +11,6 @@ import kotlin.io.path.writeText
 interface Contact7Handler {
 
     suspend fun handleRequest(
-        referer: String?,
         ipAddress: String?,
         formParameters: Map<String, String?>,
     ): Feedback?
@@ -28,7 +27,6 @@ class Contact7HandlerImpl(
      * Обрабатывает запрос и возвращает ответ клиенту
      */
     override suspend fun handleRequest(
-        referer: String?,
         ipAddress: String?,
         formParameters: Map<String, String?>,
     ): Feedback? {
@@ -78,11 +76,11 @@ class Contact7HandlerImpl(
 
         dumpOutput(formParameters)
         val filtered = formParameters.asSequence()
-            .map { (key, value) -> if (value == null) null else key to value }
+            .map { (key, value) -> if (value.isNullOrBlank()) null else key to value }
             .filterNotNull()
             .toMap()
 
-        val sendTelegramResult = telegramBot.send(referer, filtered)
+        val sendTelegramResult = telegramBot.send(filtered)
 
         return if (sendTelegramResult) {
             Feedback.mailSent(

@@ -1,33 +1,52 @@
 package aikisib.contact7
 
-import org.aeonbits.owner.Config
-import org.aeonbits.owner.Config.Sources
+import kotlinx.serialization.Serializable
 
-@Sources("classpath:contact7.properties")
-interface Contact7Config : Config {
+@Serializable
+data class Contact7Config(
+    val server: ServerConfig,
+    val yandex: YandexConfig,
+    val telegram: TelegramConfig,
+)
+
+/**
+ * Где сервер будет отдавать страничку с формой и принимать POST-запросы.
+ */
+@Serializable
+data class ServerConfig(
+    val host: String,
+
+    val port: Int,
+)
+
+/**
+ * Интеграция с Яндексом
+ */
+@Serializable
+data class YandexConfig(
+    /**
+     * Секрет капчи
+     */
+    val secret: String,
 
     /**
-     * Хост, на котором будет работать сервер.
+     * Счётчик посещения страницы
      */
-    fun serverHost(): String
+    val counter: Map<String, Long>,
+)
+
+/**
+ * Интеграция с Телеграмом.
+ */
+@Serializable
+data class TelegramConfig(
+    /**
+     * Идентификатор бота, cмотри @BotFather.
+     */
+    val botId: String,
 
     /**
-     * Порт, на котором будет работать сервер.
+     * Идентификатор канала Телеги, куда надо пересылать сообщения из ContactForm7.
      */
-    fun serverPort(): Int
-
-    /**
-     * Секрет Яндекс каптчи
-     */
-    fun yaCaptchaSecret(): String
-
-    /**
-     * Идентификатор бота Телеги, cмотри @BotFather.
-     */
-    fun telegramBotId(): String
-
-    /**
-     * Идентификатор канала Телеги,куда надо пересылать сообщения из ContactForm7.
-     */
-    fun telegramChatId(): Long
-}
+    val chatId: Long,
+)

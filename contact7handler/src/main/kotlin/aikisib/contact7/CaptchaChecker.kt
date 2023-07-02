@@ -56,7 +56,11 @@ internal class CaptchaCheckerImpl(
                     null
                 }
                 ipAddress != savedResult.ipAddress -> {
-                    logger.debug { "Подделаный токен. Уже использованный токен c IP-адреса ${savedResult.ipAddress} попробовали использовать через $ipAddress." }
+                    logger.debug {
+                        """Подделаный токен. Уже использованный токен c IP-адреса ${savedResult.ipAddress}
+                            | попробовали использовать через $ipAddress.
+                        """.trimMargin()
+                    }
                     false
                 }
                 else -> {

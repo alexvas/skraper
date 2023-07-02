@@ -19,22 +19,21 @@ interface TelegramBot {
      * @param content - набор ключ-значение содержимого к отправке
      * @return true, если отослали успешно
      */
-    suspend fun send(referer: String?, content: Map<String, String>): Boolean
+    suspend fun send(content: Map<String, String>): Boolean
 }
 
 internal class TelegramBotImpl(
-    private val telegramBotId: String,
-    private val telegramChatId: Long,
+    private val config: TelegramConfig,
     private val client: HttpClient,
 ) : TelegramBot {
 
     @Suppress("TooGenericExceptionCaught", "ReturnCount")
-    override suspend fun send(referer: String?, content: Map<String, String>): Boolean {
-        val endpoint = "https://api.telegram.org/bot$telegramBotId/sendMessage"
+    override suspend fun send(content: Map<String, String>): Boolean {
+        val endpoint = "https://api.telegram.org/bot${config.botId}/sendMessage"
 
         val response = client.post(endpoint) {
             contentType(ContentType.Application.Json)
-            setBody(createMessageToSend(referer, content))
+            setBody(createMessageToSend(content))
         }
         if (response.status != HttpStatusCode.OK) {
             logger.warn { "Статус ${response.status} для обращения к телеграм-боту." }
@@ -59,24 +58,17 @@ internal class TelegramBotImpl(
         return false
     }
 
-    private fun createMessageToSend(
-        referer: String?,
-        content: Map<String, String>,
-    ): MessageToSend {
+    private fun createMessageToSend(content: Map<String, String>): MessageToSend {
         val output = buildList {
-            val landing = referer ?: content["landing"]
-            if (landing != null) {
-                add("URL => $landing")
-            }
             content.filterNot {
-                it.key.startsWith("_wpcf7")
+                it.key.startsWith("_wpcf7") || it.key == "smart-token"
             }.forEach { (key, value) ->
                 add("$key => $value")
             }
         }
         val textContent = output.joinToString(separator = "\n")
         return MessageToSend(
-            chat_id = telegramChatId,
+            chat_id = config.chatId,
             text = textContent,
 //            parse_mode = "MarkdownV2",
             disable_web_page_preview = true,
