@@ -12,10 +12,12 @@ $(function () {
     function validateAndSerializeApplicationForm() {
         const emailInput = $('#email');
         const phoneInput = $('input[name="Phone"]');
+        const captchaContainer = $("#captcha-container");
         const emailDiv = emailInput.closest('.t-input-block');
         const phoneDiv = phoneInput.closest('.t-input-block');
         emailDiv.removeClass(inputErrorClass);
         phoneDiv.removeClass(inputErrorClass);
+        captchaContainer.removeClass(inputErrorClass);
         validationErrorMessage.hide();
         thanksMessage.hide();
         failedMessage.hide();
@@ -25,7 +27,9 @@ $(function () {
         const validEmail = emailRegex.test(email);
         const phoneRegex = /^[\d() +-]{7,19}\d$/
         const validPhone = phoneRegex.test(phone);
-        if (validEmail || validPhone) {
+        const smartToken = $('input[name="smart-token"]').val()
+        const validSmartToken = /\S/.test(smartToken);
+        if ((validEmail || validPhone) && validSmartToken) {
             const draft = {'name': $('#name').val(), 'phone': phone, 'email': email}
             let output = Object.keys(draft).reduce((newObj, key) => {
                 const value = draft[key];
@@ -36,15 +40,22 @@ $(function () {
             }, {});
             let params = (new URL(document.location)).searchParams;
             output['landing'] = params.get('landing');
-            output['smart-token'] = $('input[name="smart-token"]').val()
+            output['smart-token'] = smartToken
             return output;
         }
-        validationErrorMessage.show('slow');
-        if (/\S/.test(email)) {
-            emailDiv.addClass(inputErrorClass);
+        const someEmail = /\S/.test(email);
+        const somePhone = /\S/.test(phone);
+        if (someEmail || somePhone) {
+            validationErrorMessage.show('slow');
+            if (someEmail && !validEmail) {
+                emailDiv.addClass(inputErrorClass);
+            }
+            if (somePhone && !validPhone) {
+                phoneDiv.addClass(inputErrorClass);
+            }
         }
-        if (/\S/.test(phone)) {
-            phoneDiv.addClass(inputErrorClass);
+        if (!validSmartToken) {
+            captchaContainer.addClass(inputErrorClass)
         }
         return null;
     }

@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 data class Contact7Config(
     val server: ServerConfig,
     val yandex: YandexConfig,
+    val vk: VkConfig,
     val telegram: TelegramConfig,
 )
 
@@ -29,6 +30,17 @@ data class YandexConfig(
      */
     val secret: String,
 
+    /**
+     * Счётчик посещения страницы
+     */
+    val counter: Map<String, Long>,
+)
+
+/**
+ * Интеграция с Яндексом
+ */
+@Serializable
+data class VkConfig(
     /**
      * Счётчик посещения страницы
      */

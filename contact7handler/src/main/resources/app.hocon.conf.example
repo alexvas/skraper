@@ -21,10 +21,22 @@ yandex {
     }
 }
 
+# Интеграция с Вконтакте
+vk {
+    # Счётчик посещения страницы
+    counter {
+        "aikisib.ru": 1111111,
+        "deti.aikisib.ru": 1111112,
+        "rus.aikisib.ru": 1111113,
+        "nsu.aikisib.ru": 1111114,
+        "deti-nsu.aikisib.ru": 1111115,
+    }
+}
+
 # Интеграция с Телеграмом.
 telegram {
     # Идентификатор бота, cмотри @BotFather.
-    botId: aaaaaa-bbbb-1111-333cde
+    botId: "5555555555:AAAAAAAAAAAAAAAAAAAAAAAA=="
     # Идентификатор канала Телеги, куда надо пересылать сообщения из ContactForm7 (Get IDs Bot).
     chatId: -089348343
 }

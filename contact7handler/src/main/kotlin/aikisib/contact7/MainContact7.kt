@@ -102,15 +102,24 @@ suspend fun main() {
             }
             get("/apply") {
                 val landing = call.request.queryParameters["landing"] ?: "unknown"
-                val counter = appConfig.yandex.counter[landing]
-                if (counter == null) {
-                    call.respondText { "Landing $landing not configured." }
+                val yaCounter = appConfig.yandex.counter[landing]
+                if (yaCounter == null) {
+                    call.respondText { "Landing $landing has no Yandex counter configured." }
+                    return@get
+                }
+                val vkCounter = appConfig.vk.counter[landing]
+                if (vkCounter == null) {
+                    call.respondText { "Landing $landing has no Vkontakte Pixel counter configured." }
                     return@get
                 }
                 call.respond(
                     ThymeleafContent(
                         "index",
-                        mapOf("landing" to landing, "ya_counter_num" to counter),
+                        mapOf(
+                            "landing" to landing,
+                            "ya_counter_num" to yaCounter,
+                            "vk_counter_num" to vkCounter,
+                        ),
                     ),
                 )
             }
