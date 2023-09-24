@@ -4,7 +4,7 @@
         <withJansi>true</withJansi>
         <encoder>
             <charset>UTF-8</charset>
-            <pattern>%green(%date{HH:mm:ss.SSS}) %highlight(%-5level) [%15.15thread] %cyan(%40logger{40}) %gray([%mdc]) %message%n%rootException</pattern>
+            <pattern>%green(%date{yyyy-MM-dd HH:mm:ss.SSS}) %highlight(%-5level) [%15.15thread] %cyan(%40logger{40}) %gray([%mdc]) %message%n%rootException</pattern>
         </encoder>
     </appender>
 
@@ -19,7 +19,7 @@
     <logger name="org.thymeleaf" level="TRACE" />
 -->
 
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />
     </root>

@@ -1,5 +1,6 @@
 package aikisib.slider
 
+import aikisib.Timeouts
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.apache.Apache
@@ -59,9 +60,9 @@ class SliderRevolutionScraperImpl(
 
     private val client = HttpClient(Apache) {
         engine {
-            socketTimeout = 10_000
-            connectTimeout = 10_000
-            connectionRequestTimeout = 20_000
+            socketTimeout = Timeouts.SOCKET_TIMEOUT_MS
+            connectTimeout = Timeouts.CONNECT_TIMEOUT_MS
+            connectionRequestTimeout = Timeouts.CONNECTION_REQUEST_TIMEOUT_MS
         }
         install(Logging) {
             logger = object : Logger {

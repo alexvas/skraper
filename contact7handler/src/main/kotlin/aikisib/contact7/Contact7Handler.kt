@@ -31,11 +31,11 @@ class Contact7HandlerImpl(
         formParameters: Map<String, String?>,
     ): Feedback? {
         val contactFormId: Int = formParameters.intParameter("_wpcf7") ?: let {
-            logger.debug { "нет идентификатора формы" }
+            logger.info { "нет идентификатора формы" }
             return null
         }
         val pageId: Int = formParameters.intParameter("_wpcf7_container_post") ?: let {
-            logger.debug { "нет номера страницы" }
+            logger.info { "нет номера страницы" }
             return null
         }
 
@@ -49,11 +49,11 @@ class Contact7HandlerImpl(
         }
 
         val captchaResponseToken = formParameters["smart-token"] ?: let {
-            logger.debug { "нет токена Яндекса" }
+            logger.info { "нет токена Яндекса" }
             return null
         }
         val ip = ipAddress ?: let {
-            logger.debug { "нет ip-адреса" }
+            logger.info { "нет ip-адреса" }
             return null
         }
         val dataHash = formParameters.entries

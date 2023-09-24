@@ -37,11 +37,11 @@ class TildaHandlerImpl(
 
         dumpOutput(formParameters)
         val captchaResponseToken = formParameters["smart-token"] ?: let {
-            logger.debug { "нет токена Яндекса" }
+            logger.info { "нет токена Яндекса" }
             return false
         }
         val ip = ipAddress ?: let {
-            logger.debug { "нет ip-адреса" }
+            logger.info { "нет ip-адреса" }
             return false
         }
         val dataHash = formParameters.entries

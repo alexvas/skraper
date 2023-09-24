@@ -48,15 +48,15 @@ internal class CaptchaCheckerImpl(
                     localResultCache[captchaResponseToken] = ResultForIp(ipAddress, dataHash, yaDecision)
                 }
                 !savedResult.result -> {
-                    logger.debug { "Перед этим результат для $ipAddress и токена был отрицательным" }
+                    logger.info { "Перед этим результат для $ipAddress и токена был отрицательным" }
                     false
                 }
                 dataHash == savedResult.dataHash -> {
-                    logger.debug { "Дублирующая отправка той же формы для $ipAddress" }
+                    logger.info { "Дублирующая отправка той же формы для $ipAddress" }
                     null
                 }
                 ipAddress != savedResult.ipAddress -> {
-                    logger.debug {
+                    logger.info {
                         """Подделаный токен. Уже использованный токен c IP-адреса ${savedResult.ipAddress}
                             | попробовали использовать через $ipAddress.
                         """.trimMargin()
@@ -64,7 +64,7 @@ internal class CaptchaCheckerImpl(
                     false
                 }
                 else -> {
-                    logger.debug { "Скорректированная форма с тем же токеном" }
+                    logger.info { "Скорректированная форма с тем же токеном" }
                     true
                 }
             }

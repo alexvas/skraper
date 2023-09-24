@@ -1,5 +1,7 @@
 package aikisib.contact7
 
+import aikisib.contact7.Timeouts.REQUEST_READ_TIMEOUT_S
+import aikisib.contact7.Timeouts.RESPONSE_WRITE_TIMEOUT_S
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
@@ -12,9 +14,9 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
 import io.ktor.server.application.install
-import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.http.content.staticResources
+import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.header
@@ -132,7 +134,7 @@ suspend fun main() {
                     .toMutableMap()
                 val host = call.request.header(HttpHeaders.XForwardedHost)
                 if (host == null) {
-                    logger.debug { "отсутствует заголовок X-Forwarded-Host" }
+                    logger.info { "отсутствует заголовок X-Forwarded-Host" }
                     return@post
                 }
                 formParameters["landing"] = host
@@ -149,19 +151,23 @@ suspend fun main() {
 
     val serverConfig = appConfig.server
     embeddedServer(
-        factory = CIO,
+        factory = Netty,
         host = serverConfig.host,
         port = serverConfig.port,
         module = { module() },
+        configure = {
+            requestReadTimeoutSeconds = REQUEST_READ_TIMEOUT_S
+            responseWriteTimeoutSeconds = RESPONSE_WRITE_TIMEOUT_S
+        },
     ).start(wait = true)
 }
 
 private fun createHttpClient() =
     HttpClient(Apache) {
         engine {
-            socketTimeout = 10_000
-            connectTimeout = 10_000
-            connectionRequestTimeout = 20_000
+            socketTimeout = Timeouts.SOCKET_TIMEOUT_MS
+            connectTimeout = Timeouts.CONNECT_TIMEOUT_MS
+            connectionRequestTimeout = Timeouts.CONNECTION_REQUEST_TIMEOUT_MS
         }
         expectSuccess = false
         install(ClientContentNegotiation) {

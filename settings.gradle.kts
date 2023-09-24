@@ -68,7 +68,7 @@ dependencyResolutionManagement {
                 ),
             )
             library("ktor.server.core", "io.ktor", "ktor-server-core").version(ktor)
-            library("ktor.server.cio", "io.ktor", "ktor-server-cio").version(ktor)
+            library("ktor.server.netty", "io.ktor", "ktor-server-netty").version(ktor)
             library("ktor.server.content.negotiation", "io.ktor", "ktor-server-content-negotiation").version(ktor)
             library("ktor.server.locations", "io.ktor", "ktor-server-locations").version(ktor)
             library("ktor.server.status.pages", "io.ktor", "ktor-server-status-pages").version(ktor)
@@ -78,7 +78,7 @@ dependencyResolutionManagement {
                 "ktor.server",
                 listOf(
                     "ktor.server.core",
-                    "ktor.server.cio",
+                    "ktor.server.netty",
                     "ktor.server.content.negotiation",
                     "ktor.server.locations",
                     "ktor.server.status.pages",

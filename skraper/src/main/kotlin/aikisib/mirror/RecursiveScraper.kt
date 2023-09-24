@@ -157,17 +157,21 @@ internal class RecursiveScraperImpl(
             null,
         )
 
-    private fun makeWebPCopy(toRoot: Path) {
-        for ((originalDescription, transformed) in transformCache) {
-            if (originalDescription.type !in IMAGES_TO_BE_CONVERTED) {
-                continue
+    private suspend fun makeWebPCopy(toRoot: Path) {
+        coroutineScope {
+            for ((originalDescription, transformed) in transformCache) {
+                if (originalDescription.type !in IMAGES_TO_BE_CONVERTED) {
+                    continue
+                }
+                val relative = relativizer.relativize(fromRoot, transformed, null)
+                val targetPath = toRoot.resolve(relative.toString())
+                targetPath.parent.createDirectories()
+                val targetPathWithExtension = targetPath.parent.resolve(targetPath.name + ".webp")
+                launch(Dispatchers.Default) {
+                    webpEncoder.encode(originalDescription, targetPathWithExtension)
+                    athropos.removeIfLarger(originalDescription.localPath, targetPathWithExtension)
+                }
             }
-            val relative = relativizer.relativize(fromRoot, transformed, null)
-            val targetPath = toRoot.resolve(relative.toString())
-            targetPath.parent.createDirectories()
-            val targetPathWithExtension = targetPath.parent.resolve(targetPath.name + ".webp")
-            webpEncoder.encode(originalDescription, targetPathWithExtension)
-            athropos.removeIfLarger(originalDescription.localPath, targetPathWithExtension)
         }
     }
 
