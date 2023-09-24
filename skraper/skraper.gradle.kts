@@ -18,6 +18,7 @@ application {
 
 dependencies {
     implementation(platform(libs.kotlin.bom))
+    implementation(platform(libs.netty.bom))
 
     implementation(libs.kotlin.serialization.hocon)
     implementation(libs.bundles.web.driver.manager)
@@ -37,6 +38,8 @@ dependencies {
     runtimeOnly(libs.log4j.to.slf4j)
     runtimeOnly(libs.logback)
     runtimeOnly(libs.jansi)
+
+    ktlint(libs.logback)
 
     testImplementation(libs.selenium.chrome.driver)
     testImplementation(libs.assertj)

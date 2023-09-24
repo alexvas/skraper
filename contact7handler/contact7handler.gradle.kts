@@ -35,6 +35,7 @@ tasks.jar {
 
 dependencies {
     implementation(platform(libs.kotlin.bom))
+    implementation(platform(libs.netty.bom))
     implementation(libs.bundles.kotlin.serialization)
     implementation(libs.slf4j.api)
     implementation(libs.coroutines.core)
@@ -52,6 +53,8 @@ dependencies {
     runtimeOnly(libs.log4j.to.slf4j)
     runtimeOnly(libs.logback)
     runtimeOnly(libs.jansi)
+
+    ktlint(libs.logback)
 
     testImplementation(libs.assertj)
     testImplementation(libs.jupiter.api)

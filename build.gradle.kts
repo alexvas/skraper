@@ -8,6 +8,7 @@ plugins {
     // linters
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.owasp)
 }
 
 subprojects {
@@ -30,7 +31,7 @@ subprojects {
         extensions.apply {
             findByType(KotlinJvmProjectExtension::class)?.apply {
                 jvmToolchain {
-                    (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of("11"))
+                    languageVersion.set(JavaLanguageVersion.of("17"))
                 }
             }
         }

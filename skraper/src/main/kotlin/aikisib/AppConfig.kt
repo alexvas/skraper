@@ -4,7 +4,6 @@ package aikisib
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -108,7 +107,6 @@ data class Vault(
     val password: String,
 )
 
-@Serializer(forClass = URL::class)
 object URLSerializer : KSerializer<URL> {
     override val descriptor: SerialDescriptor
         get() = PrimitiveSerialDescriptor("URL", PrimitiveKind.STRING)
@@ -122,7 +120,6 @@ object URLSerializer : KSerializer<URL> {
     }
 }
 
-@Serializer(forClass = File::class)
 object FileByNameSerializer : KSerializer<File> {
     override val descriptor: SerialDescriptor
         get() = PrimitiveSerialDescriptor("FileByName", PrimitiveKind.STRING)
