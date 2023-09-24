@@ -56,13 +56,14 @@ dependencyResolutionManagement {
             val ktor = "2.3.1"
             library("ktor.client.core", "io.ktor", "ktor-client-core").version(ktor)
             library("ktor.client.cio", "io.ktor", "ktor-client-cio").version(ktor)
+            library("ktor.client.apache", "io.ktor", "ktor-client-apache").version(ktor)
             library("ktor.client.logging", "io.ktor", "ktor-client-logging").version(ktor)
             library("ktor.client.content.negotiation", "io.ktor", "ktor-client-content-negotiation").version(ktor)
             bundle(
                 "ktor.client.base",
                 listOf(
                     "ktor.client.core",
-                    "ktor.client.cio",
+                    "ktor.client.apache",
                     "ktor.client.logging",
                 ),
             )

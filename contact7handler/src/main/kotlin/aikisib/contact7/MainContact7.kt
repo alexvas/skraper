@@ -2,6 +2,7 @@ package aikisib.contact7
 
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.apache.Apache
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
@@ -156,7 +157,12 @@ suspend fun main() {
 }
 
 private fun createHttpClient() =
-    HttpClient(io.ktor.client.engine.cio.CIO) {
+    HttpClient(Apache) {
+        engine {
+            socketTimeout = 10_000
+            connectTimeout = 10_000
+            connectionRequestTimeout = 20_000
+        }
         expectSuccess = false
         install(ClientContentNegotiation) {
             json(

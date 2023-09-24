@@ -2,7 +2,7 @@ package aikisib.slider
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.apache.Apache
 import io.ktor.client.plugins.RedirectResponseException
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.LogLevel
@@ -57,7 +57,12 @@ class SliderRevolutionScraperImpl(
     private val adminUrl: URL,
 ) : SliderRevolutionScraper {
 
-    private val client = HttpClient(CIO) {
+    private val client = HttpClient(Apache) {
+        engine {
+            socketTimeout = 10_000
+            connectTimeout = 10_000
+            connectionRequestTimeout = 20_000
+        }
         install(Logging) {
             logger = object : Logger {
                 override fun log(message: String) {
