@@ -6,9 +6,6 @@ import io.ktor.http.ContentType
 import mu.KLogging
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.jsoup.select.NodeFilter
-import org.jsoup.select.NodeFilter.FilterResult.CONTINUE
-import org.jsoup.select.NodeFilter.FilterResult.SKIP_ENTIRELY
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.readText
@@ -143,17 +140,8 @@ private class HtmlLinkExtractor(
             val src = it.attr("src")
             result.maybeAdd(remoteUri, src, from)
         }
-
-        // <meta name="msapplication-TileImage" content
-        val onlyMsApplicationTileImage = NodeFilter { node, _ ->
-            if (node.attr("name") == "msapplication-TileImage") {
-                CONTINUE
-            } else {
-                SKIP_ENTIRELY
-            }
-        }
         doc.getElementsByTag("meta")
-            .filter(onlyMsApplicationTileImage)
+            .filter { it -> it.attr("name") == "msapplication-TileImage" }
             .forEach {
                 val content = it.attr("content")
                 result.maybeAdd(remoteUri, content, from)
