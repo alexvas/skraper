@@ -50,8 +50,16 @@ internal class SitemapGeneratorImpl(
     private fun generateAndSaveRobotsTxt() {
         val robotsTxtContent = RobotsTxtGenerator.of(canonicalHref.toString())
             .addSitemap("sitemap.xml")
-            .addRule(RobotsRule.builder().userAgentAll().allowAll().build())
+            .addRule(RobotsRule.builder().userAgentAll().disallow("/*?*").build())
             .toString()
-        targerRootPath.resolve("robots.txt").writeText(robotsTxtContent)
+        val cleanParam = (
+            ('a'..'z') +
+                ('A'..'Z') +
+                ('0'..'9') +
+                '.' + '_' + '-')
+            .joinToString("&")
+        val robotsTxtContentWithCleanParams = """$robotsTxtContent
+                                                |Clean-param: $cleanParam""".trimMargin("|")
+        targerRootPath.resolve("robots.txt").writeText(robotsTxtContentWithCleanParams)
     }
 }
