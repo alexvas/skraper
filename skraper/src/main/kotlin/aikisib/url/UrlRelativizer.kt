@@ -1,6 +1,7 @@
 package aikisib.url
 
 import java.net.URI
+import kotlin.math.min
 
 /**
  * Сервис для построения относительных ссылок.
@@ -13,40 +14,62 @@ interface UrlRelativizer {
      * @param source - откуда ссылаются.
      * @param target - ссылка на элемент.
      */
-    fun relativize(source: URI, target: LocalResource, rawFragment: String?): URI
-
-    /**
-     * Конструирует относительную ссылку для указанного местоположения.
-     *
-     * @param source - откуда ссылаются.
-     * @param target - ссылка на элемент.
-     */
-    fun relativize(source: LocalResource, target: LocalResource, rawFragment: String?): URI
-
-    /**
-     * Конструирует относительную ссылку для указанного местоположения.
-     *
-     * @param source - откуда ссылаются.
-     * @param target - ссылка на элемент.
-     */
-    fun relativize(source: LocalResource, target: LocalResource): URI
+    fun relativize(source: URI, target: URI, rawFragment: String?): URI?
 }
 
 internal object UrlRelativizerImpl : UrlRelativizer {
 
-    override fun relativize(source: URI, target: LocalResource, rawFragment: String?): URI {
-        TODO("Not yet implemented")
+    override fun relativize(source: URI, target: URI, rawFragment: String?): URI? {
+        require(source.query == null) { "Ненулевой query у source $source" }
+        require(target.query == null) { "Ненулевой query у target $target" }
+
+        val sourcePathSegments = source.rawPath.split('/')
+        val targetPathSegments = target.rawPath.split('/')
+
+        // пропускаем общие элементы пути
+        var index = 0
+        val maxIndex = min(sourcePathSegments.size, targetPathSegments.size)
+        while (index < maxIndex && sourcePathSegments[index] == targetPathSegments[index]) {
+            ++index
+        }
+
+        if (index == maxIndex) {
+            // Та же самая страничка
+            return onlyFragment(target.fragment)
+        }
+
+        // Сколько раз надо подняться наверх. Один из сегментов пути -- это имя файла.
+        val upDirCount = sourcePathSegments.size - index - 1
+        if (upDirCount > 0) {
+            return null
+        }
+        val resultChunks = mutableListOf<String>()
+        while (index < targetPathSegments.size) {
+            resultChunks.add(targetPathSegments[index])
+            ++index
+        }
+
+        return relativeUri(resultChunks, rawFragment)
     }
 
-    override fun relativize(source: LocalResource, target: LocalResource, rawFragment: String?): URI {
-        TODO("Not yet implemented")
+    private fun relativeUri(
+        resultChunks: MutableList<String>,
+        fragment: String?,
+    ): URI {
+        val path = resultChunks.joinToString(separator = "/")
+
+        val pathWithFragment = if (fragment.isNullOrBlank()) {
+            path
+        } else {
+            "$path#$fragment"
+        }
+
+        return URI(pathWithFragment)
     }
 
-    override fun relativize(source: LocalResource, target: LocalResource): URI {
-        TODO("Not yet implemented")
-    }
-
-    private fun URI.onlyFragment() = URI(
+    private fun onlyFragment(
+        fragment: String?,
+    ) = URI(
         /* scheme = */
         null,
         /* userInfo = */
@@ -60,15 +83,6 @@ internal object UrlRelativizerImpl : UrlRelativizer {
         /* query = */
         null,
         /* fragment = */
-        this.fragment,
+        fragment,
     )
-
-    private fun URI.onlyPathAndFragment(): URI {
-        val uri = if (fragment.isNullOrBlank()) {
-            rawPath
-        } else {
-            "$rawPath#$fragment"
-        }
-        return URI(uri)
-    }
 }

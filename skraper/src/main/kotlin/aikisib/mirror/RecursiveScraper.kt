@@ -3,7 +3,6 @@ package aikisib.mirror
 import aikisib.model.OriginalDescription
 import aikisib.url.LocalResource
 import aikisib.url.UrlRelativizer
-import aikisib.url.UrlTouchdownTransformer
 import io.ktor.http.ContentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +51,6 @@ internal class RecursiveScraperImpl(
 
     private val downloader: Downloader,
     private val relativizer: UrlRelativizer,
-    private val urlTouchdownTransformer: UrlTouchdownTransformer,
     private val linkExtractor: LinkExtractor,
     private val fromLinkFilter: FromLinkFilter,
     private val contentTransformerFactory: ContentTransformerFactory,
@@ -109,57 +107,69 @@ internal class RecursiveScraperImpl(
     }
 
     private fun copyFile(originalDescription: OriginalDescription) {
-        val target = resolveTarget(originalDescription)
+        val target = toRoot.resolve(resolveResource(originalDescription).target)
         target.parent.createDirectories()
         originalDescription.localPath.copyTo(target, overwrite = true)
         val lastModified = originalDescription.lastModified ?: return
         target.setLastModifiedTime(FileTime.fromMillis(lastModified.time))
     }
 
-    private fun resolveTarget(originalDescription: OriginalDescription): Path {
-        val transformed = transformCache[originalDescription]
+    private fun resolveResource(originalDescription: OriginalDescription) =
+        transformCache[originalDescription]
             ?: error("трансформация для $originalDescription не закэширована.")
-        TODO("not done yet")
-    }
 
-    private fun transform(originalDescription: OriginalDescription) =
-        urlTouchdownTransformer.transform(originalDescription.type, originalDescription.remoteUri)
+    private fun transform(originalDescription: OriginalDescription): LocalResource {
+        val source = originalDescription.remoteUri
+        val type = originalDescription.type
+        return when (type) {
+            ContentType.Text.Html -> LocalResource.fromHtmlPage(source)
+            else -> LocalResource.fromEtc(source, originalDescription.type)
+        }
+    }
 
     private suspend fun moveContentTransforming() {
         coroutineScope {
             for ((originalDescription, filteredLinks: Map<String, URI>) in fanOutRepo) {
-                val transformedUri = transformCache[originalDescription]
+                val itemResource = transformCache[originalDescription]
                     ?: error("трансформация для $originalDescription не закэширована.")
 
                 launch(Dispatchers.Default) {
                     transformingMoveFileInPlace(
                         originalDescription = originalDescription,
-                        relativeLinks = filteredLinks.asSequence()
-                            .map { (link, uri) ->
-                                val targetDescription = descriptionRepo[uri.norm()] ?: return@map null
-                                val transformedLink = transformCache[targetDescription]
-                                    ?: error("целевая трансформация для $targetDescription не закэширована.")
-                                link to relativizer.relativize(transformedUri, transformedLink, uri.rawFragment)
-                            }
-                            .filterNotNull()
-                            .toMap(),
-                        resolveTarget = resolveTarget(originalDescription),
+                        relativeLinks = buildRelativeLinks(filteredLinks, itemResource),
+                        resolveResource = resolveResource(originalDescription),
                     )
                 }
             }
         }
     }
 
+    private fun buildRelativeLinks(filteredLinks: Map<String, URI>, itemResource: LocalResource) =
+        filteredLinks.asSequence()
+            .map { (link, uri) ->
+                val targetDescription = descriptionRepo[uri.norm()] ?: return@map null
+                val targetResource = transformCache[targetDescription]
+                    ?: error("целевая трансформация для $targetDescription не закэширована.")
+                val relative = relativizer.relativize(
+                    itemResource.reference,
+                    targetResource.reference,
+                    uri.rawFragment
+                ) ?: return@map null
+                link to relative
+            }
+            .filterNotNull()
+            .toMap()
+
     private fun transformingMoveFileInPlace(
         originalDescription: OriginalDescription,
         relativeLinks: Map<String, URI>,
-        resolveTarget: Path,
+        resolveResource: LocalResource,
     ) =
-        contentTransformerFactory.create(originalDescription, relativeLinks, resolveTarget)
+        contentTransformerFactory.create(originalDescription, relativeLinks, resolveResource)
             .transformingMoveFileInPlace()
 
     /**
-     * Приводим путь к нижнему регистру и зануляем фрагмент.
+     * Приводим path и query к нижнему регистру и зануляем фрагмент.
      */
     private fun URI.norm() =
         URI(
@@ -168,7 +178,7 @@ internal class RecursiveScraperImpl(
             host,
             port,
             path?.lowercase(),
-            query,
+            query?.lowercase(),
             /* зануляем фрагмент */
             null,
         )
@@ -179,8 +189,7 @@ internal class RecursiveScraperImpl(
                 if (originalDescription.type !in IMAGES_TO_BE_CONVERTED) {
                     continue
                 }
-                val relative = relativizer.relativize(fromRoot, transformed, null)
-                val targetPath = toRoot.resolve(relative.toString())
+                val targetPath = toRoot.resolve(transformed.target)
                 targetPath.parent.createDirectories()
                 val targetPathWithExtension = targetPath.parent.resolve(targetPath.name + ".webp")
                 launch(Dispatchers.Default) {

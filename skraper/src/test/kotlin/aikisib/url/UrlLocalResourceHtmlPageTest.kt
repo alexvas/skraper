@@ -2,6 +2,8 @@
 
 package aikisib.url
 
+import aikisib.url.UrlLocalResourceJpgTest.Companion._AMPERSAND
+import aikisib.url.UrlLocalResourceJpgTest.Companion._QUESTION
 import io.ktor.http.ContentType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -360,12 +362,5 @@ class UrlLocalResourceHtmlPageTest {
             assertThat(result).isEqualTo(expected)
         }
 
-    }
-
-    companion object {
-        private val QUESTION = "?".urlEncode()
-        private val _QUESTION = QUESTION.replace('%', '_')
-        private val AMPERSAND = "&".urlEncode()
-        private val _AMPERSAND = AMPERSAND.replace('%', '_')
     }
 }

@@ -2,7 +2,7 @@
 
 package aikisib.url
 
-import aikisib.url.UrlTransformerHtmlTest.Companion.AMPERSAND
+import aikisib.url.UrlLocalResourceJpgTest.Companion.AMPERSAND
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import org.junit.jupiter.api.Nested

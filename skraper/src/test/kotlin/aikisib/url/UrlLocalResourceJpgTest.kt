@@ -452,10 +452,10 @@ class UrlLocalResourceJpgTest {
     }
 
     companion object {
-        private val QUESTION = "?".urlEncode()
-        private val _QUESTION = QUESTION.replace('%', '_')
-        private val AMPERSAND = "&".urlEncode()
-        private val _AMPERSAND = AMPERSAND.replace('%', '_')
+        val QUESTION = "?".urlEncode()
+        val _QUESTION = QUESTION.replace('%', '_')
+        val AMPERSAND = "&".urlEncode()
+        val _AMPERSAND = AMPERSAND.replace('%', '_')
     }
 }
 

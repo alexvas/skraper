@@ -22,8 +22,6 @@ import aikisib.url.UrlCanonicolizer
 import aikisib.url.UrlCanonicolizerImpl
 import aikisib.url.UrlRelativizer
 import aikisib.url.UrlRelativizerImpl
-import aikisib.url.UrlTouchdownTransformer
-import aikisib.url.UrlTouchdownTransformerImpl
 import com.typesafe.config.ConfigFactory
 import io.ktor.http.ContentType
 import kotlinx.serialization.hocon.Hocon
@@ -72,7 +70,6 @@ suspend fun mirrorSite(appConfig: AppConfig) {
     val rootAliases: List<URI> = mainConfig.rootAliases.map { canonicolizer.canonicalize(URI("."), it.toString()) }
     val canonicalHref = canonicolizer.canonicalize(URI("."), mainConfig.canonicalHref.toString())
     val relativizer: UrlRelativizer = UrlRelativizerImpl
-    val transformer: UrlTouchdownTransformer = UrlTouchdownTransformerImpl
     val vault = appConfig.vault
     val ignoredPrefixes = (mainConfig.ignoredPrefixes + vault.wordpressLoginPath)
         .map { canonicolizer.canonicalize(rootMain, it.trim()).toString() }
@@ -101,7 +98,6 @@ suspend fun mirrorSite(appConfig: AppConfig) {
         toRootWebp = toRootWebp,
         downloader = downloader,
         relativizer = relativizer,
-        urlTouchdownTransformer = transformer,
         linkExtractor = linkExtractor,
         fromLinkFilter = fromLinkFilter,
         contentTransformerFactory = contentTransformerFactory,

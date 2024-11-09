@@ -1,6 +1,7 @@
 package aikisib.mirror
 
 import aikisib.model.OriginalDescription
+import aikisib.url.LocalResource
 import io.ktor.http.ContentType
 import mu.KLogging
 import org.jsoup.Jsoup
@@ -8,7 +9,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.net.URI
 import java.nio.file.FileSystemException
-import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.nio.file.attribute.FileTime
 import kotlin.io.path.createDirectories
@@ -24,7 +24,7 @@ interface ContentTransformerFactory {
     fun create(
         originalDescription: OriginalDescription,
         relativeLinks: Map<String, URI>,
-        target: Path,
+        target: LocalResource,
     ): ContentTransformer
 }
 
@@ -35,7 +35,7 @@ internal class ContentTransformerFactoryImpl(
     override fun create(
         originalDescription: OriginalDescription,
         relativeLinks: Map<String, URI>,
-        target: Path,
+        target: LocalResource,
     ): ContentTransformer =
         ContentTransformerImpl(rootMain, originalDescription, relativeLinks, target, canonicalHref)
 }
@@ -44,7 +44,7 @@ private class ContentTransformerImpl(
     rootMain: URI,
     private val originalDescription: OriginalDescription,
     private val relativeLinks: Map<String, URI>,
-    private val target: Path,
+    private val item: LocalResource,
     private val canonicalHref: URI,
 ) : ContentTransformer {
 
@@ -69,17 +69,18 @@ private class ContentTransformerImpl(
                 content = content
                     .replace(ajaxEscapedRootMain, "")
                     .replace(rootMainStr, "")
-                content = fixCanonicalLink(content, originalDescription.remoteUri)
+                content = fixCanonicalLink(content, item.reference)
             }
             else -> {}
         }
+        val target = item.target
         target.parent.createDirectories()
         try {
             target.writeText(content, options = arrayOf(StandardOpenOption.CREATE))
             val lastModified = originalDescription.lastModified ?: return
             target.setLastModifiedTime(FileTime.fromMillis(lastModified.time))
         } catch (e: FileSystemException) {
-            logger.warn { "не удалось переместить файл $target: ${e.message}" }
+            logger.warn { "не удалось переместить ресурс $item: ${e.message}" }
         }
     }
 
