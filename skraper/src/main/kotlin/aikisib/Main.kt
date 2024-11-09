@@ -84,7 +84,11 @@ suspend fun mirrorSite(appConfig: AppConfig) {
         ignoredSuffixes = ignoredSuffixes,
     )
     val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootMain, rootAliases)
-    val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(rootMain, canonicalHref)
+    val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(
+        toRoot = toRoot,
+        rootMain = rootMain,
+        canonicalHref = canonicalHref,
+    )
     val webpEncoder: WebpEncoder = WebpEncoderImpl(mainConfig.cwebpExecutable)
     val athropos: Athropos = AthroposImpl
     val sitemapGenerator: SitemapGenerator = SitemapGeneratorImpl(

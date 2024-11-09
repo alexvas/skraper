@@ -165,6 +165,7 @@ data class LocalResource(
             when {
                 input.endsWith(".woff2") -> "woff2"
                 input.endsWith(".ttf") -> "ttf"
+                input.endsWith(".cur") -> "cur"
                 else -> error("не определено расширение для пути $input с типом содержимого поток октетов")
             }
 
@@ -184,6 +185,7 @@ data class LocalResource(
             ContentType.Image.JPEG to "jpg",
             ContentType.Image.PNG to "png",
             ContentType.Image.SVG to "svg",
+            ContentType.Image.GIF to "gif",
             VND_MS_FONTOBJECT to "eot",
             VIDEO_WEBM to "webm",
             FONT_WOFF to "woff",

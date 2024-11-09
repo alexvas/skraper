@@ -9,6 +9,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.net.URI
 import java.nio.file.FileSystemException
+import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.nio.file.attribute.FileTime
 import kotlin.io.path.createDirectories
@@ -29,6 +30,7 @@ interface ContentTransformerFactory {
 }
 
 internal class ContentTransformerFactoryImpl(
+    private val toRoot: Path,
     private val rootMain: URI,
     private val canonicalHref: URI,
 ) : ContentTransformerFactory {
@@ -37,10 +39,11 @@ internal class ContentTransformerFactoryImpl(
         relativeLinks: Map<String, URI>,
         target: LocalResource,
     ): ContentTransformer =
-        ContentTransformerImpl(rootMain, originalDescription, relativeLinks, target, canonicalHref)
+        ContentTransformerImpl(toRoot, rootMain, originalDescription, relativeLinks, target, canonicalHref)
 }
 
 private class ContentTransformerImpl(
+    private val toRoot: Path,
     rootMain: URI,
     private val originalDescription: OriginalDescription,
     private val relativeLinks: Map<String, URI>,
@@ -73,7 +76,7 @@ private class ContentTransformerImpl(
             }
             else -> {}
         }
-        val target = item.target
+        val target = toRoot.resolve(item.target)
         target.parent.createDirectories()
         try {
             target.writeText(content, options = arrayOf(StandardOpenOption.CREATE))
