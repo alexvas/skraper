@@ -12,7 +12,7 @@ class UrlTransformerHtmlTest {
 
     private val root = URI("https://aikisib.ru/")
     private val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
-    private val sut: UrlTransformer = UrlTransformerImpl
+    private val sut: UrlTouchdownTransformer = UrlTouchdownTransformerImpl
 
     private fun transform(input: URI) =
         sut.transform(ContentType.Text.Html, input)

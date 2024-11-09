@@ -1,8 +1,9 @@
 package aikisib.mirror
 
 import aikisib.model.OriginalDescription
+import aikisib.url.LocalResource
 import aikisib.url.UrlRelativizer
-import aikisib.url.UrlTransformer
+import aikisib.url.UrlTouchdownTransformer
 import io.ktor.http.ContentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,13 +30,29 @@ interface RecursiveScraper {
 
 @Suppress("LongParameterList", "TooManyFunctions")
 internal class RecursiveScraperImpl(
+    /**
+     * Корневой адрес динамического сайта-источника.
+     */
     private val fromRoot: URI,
+
+    /**
+     * Корневой адрес псевдонимов динамического сайта-источника.
+     */
     private val fromAliases: List<URI>,
+
+    /**
+     * Корневая директория, куда складываем статические странички.
+     */
     private val toRoot: Path,
+
+    /**
+     * Корневая директория, куда складываем трансформированные в webp изображения.
+     */
     private val toRootWebp: Path,
+
     private val downloader: Downloader,
     private val relativizer: UrlRelativizer,
-    private val urlTransformer: UrlTransformer,
+    private val urlTouchdownTransformer: UrlTouchdownTransformer,
     private val linkExtractor: LinkExtractor,
     private val fromLinkFilter: FromLinkFilter,
     private val contentTransformerFactory: ContentTransformerFactory,
@@ -45,7 +62,7 @@ internal class RecursiveScraperImpl(
 ) : RecursiveScraper {
     private val linkRepo: MutableMap<URI, Unit> = ConcurrentHashMap()
 
-    private val transformCache: MutableMap<OriginalDescription, URI> = ConcurrentHashMap()
+    private val transformCache: MutableMap<OriginalDescription, LocalResource> = ConcurrentHashMap()
     private val descriptionRepo: MutableMap<URI, OriginalDescription> = ConcurrentHashMap()
     private val fanOutRepo: MutableMap<OriginalDescription, Map<String, URI>> = ConcurrentHashMap()
 
@@ -102,12 +119,11 @@ internal class RecursiveScraperImpl(
     private fun resolveTarget(originalDescription: OriginalDescription): Path {
         val transformed = transformCache[originalDescription]
             ?: error("трансформация для $originalDescription не закэширована.")
-        val relative = relativizer.relativize(fromRoot, transformed, transformed.rawFragment)
-        return toRoot.resolve(relative.toString())
+        TODO("not done yet")
     }
 
     private fun transform(originalDescription: OriginalDescription) =
-        urlTransformer.transform(originalDescription.type, originalDescription.remoteUri)
+        urlTouchdownTransformer.transform(originalDescription.type, originalDescription.remoteUri)
 
     private suspend fun moveContentTransforming() {
         coroutineScope {
