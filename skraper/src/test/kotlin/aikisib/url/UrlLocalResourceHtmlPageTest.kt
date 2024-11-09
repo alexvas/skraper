@@ -300,15 +300,7 @@ class UrlLocalResourceHtmlPageTest {
             val result = transform(input)
 
             // then
-            val norm = URI(
-                input.scheme,
-                null,
-                input.host,
-                -1,
-                input.path.lowercase(),
-                input.query?.lowercase(),
-                null,
-            )
+            val norm = input.norm()
 
             val expected = LocalResource(
                 source = input,
@@ -356,15 +348,7 @@ class UrlLocalResourceHtmlPageTest {
             val result = transform(input)
 
             // then
-            val norm = URI(
-                input.scheme,
-                null,
-                input.host,
-                -1,
-                input.path.lowercase(),
-                input.query?.lowercase(),
-                null,
-            )
+            val norm = input.norm()
 
             val expected = LocalResource(
                 source = input,

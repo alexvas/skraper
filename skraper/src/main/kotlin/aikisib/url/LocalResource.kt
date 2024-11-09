@@ -49,19 +49,19 @@ data class LocalResource(
         fun fromHtmlPage(source: URI): LocalResource {
             val normalizedSource = source.norm()
 
-            val query = source.query
             val path = source.path
-            val effectivePath = path + (query?.let { "?$it".fsEncode() } ?: "")
+            val query = source.query
+            val fixedPath = maybeFixHtmlPath(path, query)
             val fragment = source.fragment
 
-            val reference = createHtmlReference(effectivePath, fragment)
-            val target = createHtmlTarget(effectivePath)
+            val reference = createReference(fixedPath, fragment)
+            val target = createHtmlTarget(fixedPath)
 
             return LocalResource(source, ContentType.Text.Html, normalizedSource, reference, target)
         }
 
-        private fun createHtmlReference(rawPath: String?, fragment: String?): URI {
-            val withLeadingSlash = when (val fixedPath = maybeFixHtmlPath(rawPath)) {
+        private fun createReference(fixedPath: String, fragment: String?): URI {
+            val withLeadingSlash = when (fixedPath){
                 "/" -> "/"
                 else -> "/$fixedPath"
             }
@@ -77,8 +77,12 @@ data class LocalResource(
             )
         }
 
-        private fun maybeFixHtmlPath(rawPath: String?) =
-            rawPath?.lowercase()
+        private fun maybeFixHtmlPath(path: String?, query: String?): String {
+            return maybeFixHtmlPath(path + (query?.let { "?$it".fsEncode() } ?: ""))
+        }
+
+        private fun maybeFixHtmlPath(path: String?) =
+            path?.lowercase()
                 ?.removeSuffix("/index.html")
                 ?.removeSuffix(".html")
                 ?.removeSuffix("/")
@@ -93,8 +97,8 @@ data class LocalResource(
             else -> reEncode()
         }
 
-        private fun createHtmlTarget(rawPath: String?) =
-            when (val fixedPath = maybeFixHtmlPath(rawPath)) {
+        private fun createHtmlTarget(fixedPath: String) =
+            when (fixedPath) {
                 "/" -> Path("index.html")
                 else -> Path(fixedPath, "index.html")
             }
@@ -103,28 +107,38 @@ data class LocalResource(
          * Из всего, кроме обычной HTML странички.
          */
         fun fromEtc(source: URI, contentType: ContentType): LocalResource {
-            /*
-                        val query = source.query
-                        if (query.isNullOrBlank()) {
-                            return source.maybeFixExtension(contentType)
-                        }
-            */
-
             val normalizedSource = source.norm()
-            val rawPath = source.rawPath
-            val shouldBeExt = findExtension(contentType, rawPath)
-            val last = rawPath.splitToSequence('/').last()
-            val reference = when (last.substringAfterLast('.')) {
-                last -> throw IllegalArgumentException("URI $source malformed referencing $contentType.")
-                else -> source.appendQueryAndExtension(shouldBeExt)
+
+            val query = source.query
+            val path = source.path
+            require(path != null) {
+                "No path for URL $source of content-type $contentType."
             }
 
-            val target = Path.of(normalizedSource.path)
-            return LocalResource(source, ContentType.Text.Html, normalizedSource, reference, target)
+            val rawPath = source.rawPath
+            val shouldBeExt = findExtension(contentType, rawPath)
+
+            val fragment = source.fragment
+            val fixedPath = maybeFixEtcPath(path, shouldBeExt, query)
+            val reference = createReference(fixedPath, fragment)
+            val target = Path(fixedPath)
+            return LocalResource(source, contentType, normalizedSource, reference, target)
         }
 
+        private fun maybeFixEtcPath(path: String, shouldBeExt: String, query: String?): String {
+            val fixedPath = maybeFixEtcPath(path, shouldBeExt)
+            val effectivePath = fixedPath + (query?.let { "?$it".fsEncode() }?.lowercase() ?: "")
+            return "$effectivePath.$shouldBeExt"
+        }
+
+        private fun maybeFixEtcPath(path: String, shouldBeExt: String) =
+            path.lowercase()
+                .removeSuffix(".$shouldBeExt")
+                .removePrefix("/")
+                .maybeEncode()
+
         /**
-         * Приводим путь к нижнему регистру и зануляем фрагмент.
+         * Приводим path и query к нижнему регистру и зануляем фрагмент.
          */
         private fun URI.norm() =
             URI(
@@ -133,7 +147,7 @@ data class LocalResource(
                 host,
                 port,
                 path?.lowercase(),
-                query,
+                query?.lowercase(),
                 /* зануляем фрагмент */
                 null,
             )
