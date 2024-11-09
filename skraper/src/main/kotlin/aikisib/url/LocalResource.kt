@@ -1,9 +1,6 @@
 package aikisib.url
 
 import io.ktor.http.ContentType
-import io.ktor.http.URLBuilder
-import io.ktor.http.takeFrom
-import io.ktor.http.toURI
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.file.Path
@@ -192,38 +189,6 @@ data class LocalResource(
             FONT_WOFF to "woff",
             FONT_WOFF2 to "woff2",
         )
-
-
-        private fun URI.appendQueryAndExtension(shouldBeExt: String): URI {
-            val inputSegments = rawPath.split('/').map { it.reEncode() }
-            val last = inputSegments.last()
-            val pathSegmentsWoLast: List<String> = inputSegments.toMutableList().also { it.removeLast() }
-            val segmentToBeLast = last + "?$query".fsEncode() + ".$shouldBeExt"
-            val pathSegments = pathSegmentsWoLast + segmentToBeLast
-            return withPathSegmentsAndNoQuery(pathSegments)
-        }
-
-        private fun URI.withPathAndNoQuery(path: String): URI {
-            val inputSegments = path.split('/').map { it.reEncode() }
-            val last = inputSegments.last()
-            val pathSegmentsWoLast: List<String> = inputSegments.toMutableList().also { it.removeLast() }
-            val filename = last.substringBeforeLast('.')
-            val ext = last.substringAfterLast('.')
-            val segmentToBeLast = "$filename.$ext"
-            val pathSegments = pathSegmentsWoLast + segmentToBeLast
-            return withPathSegmentsAndNoQuery(pathSegments)
-        }
-
-        private fun URI.withPathSegmentsAndNoQuery(pathSegments: List<String>): URI {
-            return URLBuilder().takeFrom(this)
-                .also { urlBuilder ->
-                    urlBuilder.encodedPathSegments = pathSegments
-                    urlBuilder.encodedParameters.clear()
-                }
-                .build()
-                .toURI()
-        }
-
 
         /**
          * Браузеры скептически относятся к URL-кодированным символам,
