@@ -1,5 +1,6 @@
 package aikisib.url
 
+import io.ktor.http.ContentType
 import java.net.URI
 import kotlin.math.min
 
@@ -14,12 +15,26 @@ interface UrlRelativizer {
      * @param source - откуда ссылаются.
      * @param target - ссылка на элемент.
      */
-    fun relativize(source: URI, target: URI, rawFragment: String?): URI?
+    fun maybeRelativize(
+        sourceContentType: ContentType,
+        source: URI,
+        target: URI,
+        rawFragment: String?,
+    ): URI?
 }
 
 internal object UrlRelativizerImpl : UrlRelativizer {
 
-    override fun relativize(source: URI, target: URI, rawFragment: String?): URI? {
+    override fun maybeRelativize(
+        sourceContentType: ContentType,
+        source: URI,
+        target: URI,
+        rawFragment: String?,
+    ): URI {
+        if (sourceContentType == ContentType.Text.Html) {
+            return target
+        }
+
         require(source.query == null) { "Ненулевой query у source $source" }
         require(target.query == null) { "Ненулевой query у target $target" }
 
@@ -41,7 +56,7 @@ internal object UrlRelativizerImpl : UrlRelativizer {
         // Сколько раз надо подняться наверх. Один из сегментов пути -- это имя файла.
         val upDirCount = sourcePathSegments.size - index - 1
         if (upDirCount > 0) {
-            return null
+            return target
         }
         val resultChunks = mutableListOf<String>()
         while (index < targetPathSegments.size) {

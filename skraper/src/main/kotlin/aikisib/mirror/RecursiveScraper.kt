@@ -150,7 +150,8 @@ internal class RecursiveScraperImpl(
                 val targetDescription = descriptionRepo[uri.norm()] ?: return@map null
                 val targetResource = transformCache[targetDescription]
                     ?: error("целевая трансформация для $targetDescription не закэширована.")
-                val relative = relativizer.relativize(
+                val relative = relativizer.maybeRelativize(
+                    itemResource.contentType,
                     itemResource.reference,
                     targetResource.reference,
                     uri.rawFragment

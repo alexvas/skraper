@@ -2,6 +2,7 @@
 
 package aikisib.url
 
+import io.ktor.http.ContentType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -14,7 +15,12 @@ internal class UrlRelativizerTest {
     private val sut: UrlRelativizer = UrlRelativizerImpl
 
     private fun relativize(source: URI, target: URI) =
-        sut.relativize(source, target, target.rawFragment)
+        sut.maybeRelativize(
+            ContentType.Text.CSS,
+            source,
+            target,
+            target.rawFragment,
+        )
 
     @Nested
     inner class `путь отсутствует` {
