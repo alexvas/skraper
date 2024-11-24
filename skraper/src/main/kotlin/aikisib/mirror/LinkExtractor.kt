@@ -1,7 +1,7 @@
 package aikisib.mirror
 
 import aikisib.model.OriginalDescription
-import aikisib.url.UrlCanonicolizer
+import aikisib.url.UrlStandardizer
 import io.ktor.http.ContentType
 import mu.KLogging
 import org.jsoup.Jsoup
@@ -22,14 +22,14 @@ interface LinkExtractor {
 }
 
 internal class LinkExtractorImpl(
-    uriCanonicolizer: UrlCanonicolizer,
+    urlStandardizer: UrlStandardizer,
     ignoredPrefixes: Set<String>,
     ignoredSuffixes: Set<String>,
 ) : LinkExtractor {
 
     private val delegates: Map<ContentType, LinkExtractor> = mapOf(
-        ContentType.Text.Html to HtmlLinkExtractor(uriCanonicolizer, ignoredPrefixes, ignoredSuffixes),
-        ContentType.Text.CSS to CssLinkExtractor(uriCanonicolizer, ignoredPrefixes, ignoredSuffixes),
+        ContentType.Text.Html to HtmlLinkExtractor(urlStandardizer, ignoredPrefixes, ignoredSuffixes),
+        ContentType.Text.CSS to CssLinkExtractor(urlStandardizer, ignoredPrefixes, ignoredSuffixes),
     )
 
     @Suppress("TooGenericExceptionCaught", "SwallowedException") // исключения здесь обрабатываются адекватно
@@ -43,7 +43,7 @@ internal class LinkExtractorImpl(
 
 @Suppress("UnnecessaryAbstractClass")
 private abstract class LinkExtractorBase(
-    private val uriCanonicolizer: UrlCanonicolizer,
+    private val urlStandardizer: UrlStandardizer,
     ignoredPrefixes: Set<String>,
     ignoredSuffixes: Set<String>,
 ) {
@@ -67,7 +67,7 @@ private abstract class LinkExtractorBase(
             return
         }
         val canonical = try {
-            uriCanonicolizer.canonicalize(pageUri, href)
+            urlStandardizer.standardize(pageUri, href)
         } catch (e: IllegalArgumentException) {
             logger.warn { "IAE для ссылки '$href' на страничке $from" }
             null
@@ -88,10 +88,10 @@ private abstract class LinkExtractorBase(
 }
 
 private class HtmlLinkExtractor(
-    uriCanonicolizer: UrlCanonicolizer,
+    urlStandardizer: UrlStandardizer,
     ignoredPrefixes: Set<String>,
     ignoredSuffixes: Set<String>,
-) : LinkExtractorBase(uriCanonicolizer, ignoredPrefixes, ignoredSuffixes), LinkExtractor {
+) : LinkExtractorBase(urlStandardizer, ignoredPrefixes, ignoredSuffixes), LinkExtractor {
 
     @Suppress("LongMethod")
     override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
@@ -160,10 +160,10 @@ private class HtmlLinkExtractor(
 }
 
 private class CssLinkExtractor(
-    uriCanonicolizer: UrlCanonicolizer,
+    urlStandardizer: UrlStandardizer,
     ignoredPrefixes: Set<String>,
     ignoredSuffixes: Set<String>,
-) : LinkExtractorBase(uriCanonicolizer, ignoredPrefixes, ignoredSuffixes), LinkExtractor {
+) : LinkExtractorBase(urlStandardizer, ignoredPrefixes, ignoredSuffixes), LinkExtractor {
 
     override fun extractLinks(originalDescription: OriginalDescription): Map<String, URI> {
         val result = mutableMapOf<String, URI>()
@@ -199,11 +199,11 @@ private val urlRegex = Regex("""url\((?:'([^']++)'|"([^"]++)"|([^)]++))\)""")
  */
 @Suppress("unused")
 private class JsonLinkExtractor(
-    uriCanonicolizer: UrlCanonicolizer,
+    urlStandardizer: UrlStandardizer,
     ignoredPrefixes: Set<String>,
     ignoredSuffixes: Set<String>,
     rootMain: URI,
-) : LinkExtractorBase(uriCanonicolizer, ignoredPrefixes, ignoredSuffixes), LinkExtractor {
+) : LinkExtractorBase(urlStandardizer, ignoredPrefixes, ignoredSuffixes), LinkExtractor {
 
     private val rootMainPrefixRegex: Regex
 

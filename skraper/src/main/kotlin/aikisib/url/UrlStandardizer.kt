@@ -11,7 +11,7 @@ import kotlin.text.Charsets.UTF_8
 /**
  * Сервис для обработки ссылок
  */
-interface UrlCanonicolizer {
+interface UrlStandardizer {
 
     /**
      * Привести ссылку на объект к канонической форме.
@@ -20,10 +20,10 @@ interface UrlCanonicolizer {
      * @param originalUrl - сама ссылка на объект. Может быть абсолютной или относительной.
      * @return ссылка в канонической форме.
      */
-    fun canonicalize(parent: URI, originalUrl: String): URI
+    fun standardize(parent: URI, originalUrl: String): URI
 }
 
-internal object UrlCanonicolizerImpl : UrlCanonicolizer {
+internal object UrlStandardizerImpl : UrlStandardizer {
 
     /**
      * Отдаёт ссылку на объект в канонической форме.
@@ -32,7 +32,7 @@ internal object UrlCanonicolizerImpl : UrlCanonicolizer {
      * @param originalUrl - сама ссылка на объект
      * @return ссылка в канонической форме.
      */
-    override fun canonicalize(parent: URI, originalUrl: String): URI {
+    override fun standardize(parent: URI, originalUrl: String): URI {
         val input = normalize(parent, fixRfc3986(originalUrl))
         return URLBuilder().takeFrom(input)
             .also { urlBuilder ->

@@ -18,10 +18,12 @@ import aikisib.mirror.WebpEncoder
 import aikisib.mirror.WebpEncoderImpl
 import aikisib.slider.SliderRevolutionScraper
 import aikisib.slider.SliderRevolutionScraperImpl
-import aikisib.url.UrlCanonicolizer
-import aikisib.url.UrlCanonicolizerImpl
+import aikisib.url.UrlCanonicalizer
+import aikisib.url.UrlCanonicalizerImpl
 import aikisib.url.UrlRelativizer
 import aikisib.url.UrlRelativizerImpl
+import aikisib.url.UrlStandardizer
+import aikisib.url.UrlStandardizerImpl
 import com.typesafe.config.ConfigFactory
 import io.ktor.http.ContentType
 import kotlinx.serialization.hocon.Hocon
@@ -65,29 +67,28 @@ suspend fun mirrorSite(appConfig: AppConfig) {
         tempPath = tempPath,
         ignoredContentTypes = mainConfig.ignoredContentTypes.map { ContentType.parse(it) }.toSet(),
     )
-    val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
-    val rootMain = canonicolizer.canonicalize(URI("."), mainConfig.rootMain.toString())
-    val rootAliases: List<URI> = mainConfig.rootAliases.map { canonicolizer.canonicalize(URI("."), it.toString()) }
-    val canonicalHref = canonicolizer.canonicalize(URI("."), mainConfig.canonicalHref.toString())
+    val standardizer: UrlStandardizer = UrlStandardizerImpl
+    val rootMain = standardizer.standardize(URI("."), mainConfig.rootMain.toString())
+    val rootAliases: List<URI> = mainConfig.rootAliases.map { standardizer.standardize(URI("."), it.toString()) }
+    val canonicalHref = standardizer.standardize(URI("."), mainConfig.canonicalHref.toString())
     val relativizer: UrlRelativizer = UrlRelativizerImpl
     val vault = appConfig.vault
     val ignoredPrefixes = (mainConfig.ignoredPrefixes + vault.wordpressLoginPath)
-        .map { canonicolizer.canonicalize(rootMain, it.trim()).toString() }
+        .map { standardizer.standardize(rootMain, it.trim()).toString() }
         .toSet()
     val ignoredSuffixes = mainConfig.ignoredSuffixes
-        .map { canonicolizer.canonicalize(rootMain, it.trim()).toString() }
+        .map { standardizer.standardize(rootMain, it.trim()).toString() }
         .toSet()
 
     val linkExtractor: LinkExtractor = LinkExtractorImpl(
-        uriCanonicolizer = canonicolizer,
+        urlStandardizer = standardizer,
         ignoredPrefixes = ignoredPrefixes,
         ignoredSuffixes = ignoredSuffixes,
     )
     val fromLinkFilter: FromLinkFilter = FromLinkFilterImpl(rootMain, rootAliases)
+    val canonicalizer: UrlCanonicalizer = UrlCanonicalizerImpl
     val contentTransformerFactory: ContentTransformerFactory = ContentTransformerFactoryImpl(
-        toRoot = toRoot,
-        rootMain = rootMain,
-        canonicalHref = canonicalHref,
+        toRoot, rootMain, canonicalHref, canonicalizer,
     )
     val webpEncoder: WebpEncoder = WebpEncoderImpl(mainConfig.cwebpExecutable)
     val athropos: Athropos = AthroposImpl

@@ -2,6 +2,7 @@ package aikisib.mirror
 
 import aikisib.model.OriginalDescription
 import aikisib.url.LocalResource
+import aikisib.url.UrlCanonicalizer
 import io.ktor.http.ContentType
 import mu.KLogging
 import org.jsoup.Jsoup
@@ -33,13 +34,22 @@ internal class ContentTransformerFactoryImpl(
     private val toRoot: Path,
     private val rootMain: URI,
     private val canonicalHref: URI,
+    private val canonicalizer: UrlCanonicalizer,
 ) : ContentTransformerFactory {
     override fun create(
         originalDescription: OriginalDescription,
         relativeLinks: Map<String, URI>,
         target: LocalResource,
     ): ContentTransformer =
-        ContentTransformerImpl(toRoot, rootMain, originalDescription, relativeLinks, target, canonicalHref)
+        ContentTransformerImpl(
+            toRoot,
+            rootMain,
+            originalDescription,
+            relativeLinks,
+            target,
+            canonicalHref,
+            canonicalizer,
+        )
 }
 
 private class ContentTransformerImpl(
@@ -49,6 +59,7 @@ private class ContentTransformerImpl(
     private val relativeLinks: Map<String, URI>,
     private val item: LocalResource,
     private val canonicalHref: URI,
+    private val canonicalizer: UrlCanonicalizer,
 ) : ContentTransformer {
 
     private val rootMainStr = rootMain.toString().removeSuffix("/")
@@ -124,7 +135,10 @@ private class ContentTransformerImpl(
         val doc: Document = Jsoup.parse(input)
         val canonical = doc.getElementsByTag("link")
             .firstOrNull { it.attr("rel") == "canonical" }
-        canonical?.attr("href", remoteUri.sameOrigin(canonicalHref).toString())
+        val encoded = canonicalizer.encode(remoteUri)
+        val fixed = encoded.rawSameOrigin(canonicalHref).toString()
+        canonical?.attr("href", fixed)
+        logger.info { "Каноническая ссылка: $remoteUri -> $fixed" }
         return doc.toString()
     }
 

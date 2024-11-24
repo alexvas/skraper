@@ -12,7 +12,7 @@ import kotlin.io.path.Path
 class UrlLocalResourceJpgTest {
 
     private val root = URI("https://aikisib.ru/")
-    private val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
+    private val standardizer: UrlStandardizer = UrlStandardizerImpl
 
     private fun transform(input: URI) =
         LocalResource.fromEtc(input, ContentType.Image.JPEG)
@@ -54,7 +54,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/z.jpg?y")
+            val input = standardizer.standardize(root, "/z.jpg?y")
             val expectedPath = "z${_QUESTION}y.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -63,7 +63,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/z.jpg?y&w")
+            val input = standardizer.standardize(root, "/z.jpg?y&w")
             val expectedPath = "z${_QUESTION}y${_AMPERSAND}w.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -72,7 +72,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/z.jpg?y=t&w=r")
+            val input = standardizer.standardize(root, "/z.jpg?y=t&w=r")
             val expectedPath = "z${_QUESTION}y=t${_AMPERSAND}w=r.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -94,7 +94,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/z?y")
+            val input = standardizer.standardize(root, "/z?y")
             val expectedPath = "z${_QUESTION}y.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -103,7 +103,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/z?y&w")
+            val input = standardizer.standardize(root, "/z?y&w")
             val expectedPath = "z${_QUESTION}y${_AMPERSAND}w.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -112,7 +112,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/z?y=t&w=r")
+            val input = standardizer.standardize(root, "/z?y=t&w=r")
             val expectedPath = "z${_QUESTION}y=t${_AMPERSAND}w=r.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -125,7 +125,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/i.jpg?ы")
+            val input = standardizer.standardize(root, "/i.jpg?ы")
             val expectedPath = "i${_QUESTION}ы.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -134,7 +134,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/i.jpg?ы&э")
+            val input = standardizer.standardize(root, "/i.jpg?ы&э")
             val expectedPath = "i${_QUESTION}ы${_AMPERSAND}э.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -143,7 +143,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/i.jpg?ы=w&э=z")
+            val input = standardizer.standardize(root, "/i.jpg?ы=w&э=z")
             val expectedPath = "i${_QUESTION}ы=w${_AMPERSAND}э=z.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -156,7 +156,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем корневую query`() {
             // given
-            val input = canonicolizer.canonicalize(URI("."), "$root?ы")
+            val input = standardizer.standardize(URI("."), "$root?ы")
             val expectedPath = "${_QUESTION}ы.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -165,7 +165,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/i?ы")
+            val input = standardizer.standardize(root, "/i?ы")
             val expectedPath = "i${_QUESTION}ы.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -174,7 +174,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/i?ы&э")
+            val input = standardizer.standardize(root, "/i?ы&э")
             val expectedPath = "i${_QUESTION}ы${_AMPERSAND}э.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -183,7 +183,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/i?ы=w&э=z")
+            val input = standardizer.standardize(root, "/i?ы=w&э=z")
             val expectedPath = "i${_QUESTION}ы=w${_AMPERSAND}э=z.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -295,7 +295,7 @@ class UrlLocalResourceJpgTest {
         fun `кодированный ЧПУ ложится в свою директорию`() {
             // given
             val yi = "ы".urlEncode()
-            val input = canonicolizer.canonicalize(root, "/ы.jpg")
+            val input = standardizer.standardize(root, "/ы.jpg")
             assertThat(input.rawPath).isEqualTo("/$yi.jpg")
             val expectedPath = "ы.jpg"
             // when, then
@@ -305,7 +305,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ы.jpg?z")
+            val input = standardizer.standardize(root, "/ы.jpg?z")
             val expectedPath = "ы${_QUESTION}z.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -314,7 +314,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ы.jpg?f&g")
+            val input = standardizer.standardize(root, "/ы.jpg?f&g")
             val expectedPath = "ы${_QUESTION}f${_AMPERSAND}g.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -323,7 +323,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ы.jpg?f=z&g=w")
+            val input = standardizer.standardize(root, "/ы.jpg?f=z&g=w")
             val expectedPath = "ы${_QUESTION}f=z${_AMPERSAND}g=w.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -337,7 +337,7 @@ class UrlLocalResourceJpgTest {
         fun `кодированный ЧПУ ложится в свою директорию`() {
             // given
             val yi = "ы".urlEncode()
-            val input = canonicolizer.canonicalize(root, "/ы")
+            val input = standardizer.standardize(root, "/ы")
             assertThat(input.rawPath).isEqualTo("/$yi")
             val expectedPath = "ы.jpg"
             // when, then
@@ -347,7 +347,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ы?z")
+            val input = standardizer.standardize(root, "/ы?z")
             val expectedPath = "ы${_QUESTION}z.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -356,7 +356,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ы?f&g")
+            val input = standardizer.standardize(root, "/ы?f&g")
             val expectedPath = "ы${_QUESTION}f${_AMPERSAND}g.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -365,7 +365,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ы?f=z&g=w")
+            val input = standardizer.standardize(root, "/ы?f=z&g=w")
             val expectedPath = "ы${_QUESTION}f=z${_AMPERSAND}g=w.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -378,7 +378,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ф.jpg?ы")
+            val input = standardizer.standardize(root, "/ф.jpg?ы")
             val expectedPath = "ф${_QUESTION}ы.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -387,7 +387,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ф.jpg?ы&э")
+            val input = standardizer.standardize(root, "/ф.jpg?ы&э")
             val expectedPath = "ф${_QUESTION}ы${_AMPERSAND}э.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -396,7 +396,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ф.jpg?ы=z&э=w")
+            val input = standardizer.standardize(root, "/ф.jpg?ы=z&э=w")
             val expectedPath = "ф${_QUESTION}ы=z${_AMPERSAND}э=w.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -409,7 +409,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ф?ы")
+            val input = standardizer.standardize(root, "/ф?ы")
             val expectedPath = "ф${_QUESTION}ы.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -418,7 +418,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ф?ы&э")
+            val input = standardizer.standardize(root, "/ф?ы&э")
             val expectedPath = "ф${_QUESTION}ы${_AMPERSAND}э.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -427,7 +427,7 @@ class UrlLocalResourceJpgTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ф?ы=z&э=w")
+            val input = standardizer.standardize(root, "/ф?ы=z&э=w")
             val expectedPath = "ф${_QUESTION}ы=z${_AMPERSAND}э=w.jpg".lowercase()
             // when, then
             whenThen(input, expectedPath)

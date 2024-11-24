@@ -14,7 +14,7 @@ import kotlin.io.path.Path
 class UrlLocalResourceHtmlPageTest {
 
     private val root = URI("https://aikisib.ru/")
-    private val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
+    private val standardizer: UrlStandardizer = UrlStandardizerImpl
 
     private fun transform(input: URI) =
         LocalResource.fromHtmlPage(input)
@@ -68,7 +68,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `HTML страничка ложится в свою директорию`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/page.html")
+            val input = standardizer.standardize(root, "/page.html")
             val expectedPath = "page"
             // when, then
             whenThen(input, expectedPath)
@@ -77,7 +77,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `игнорируем index_dot_html`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/i/index.html")
+            val input = standardizer.standardize(root, "/i/index.html")
             val expectedPath = "i"
             // when, then
             whenThen(input, expectedPath)
@@ -86,7 +86,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `ЧПУ ложится в свою директорию`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/i")
+            val input = standardizer.standardize(root, "/i")
             val expectedPath = "i"
             // when, then
             whenThen(input, expectedPath)
@@ -104,7 +104,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/z?y")
+            val input = standardizer.standardize(root, "/z?y")
             val expectedPath = "z${_QUESTION}y".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -113,7 +113,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/z?y&w")
+            val input = standardizer.standardize(root, "/z?y&w")
             val expectedPath = "z${_QUESTION}y${_AMPERSAND}w".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -122,7 +122,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/z?y=t&w=r")
+            val input = standardizer.standardize(root, "/z?y=t&w=r")
             val expectedPath = "z${_QUESTION}y=t${_AMPERSAND}w=r".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -148,7 +148,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем корневую query`() {
             // given
-            val input = canonicolizer.canonicalize(URI("."), "$root?ы")
+            val input = standardizer.standardize(URI("."), "$root?ы")
             val expectedPath = "${_QUESTION}ы".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -157,7 +157,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/i?ы")
+            val input = standardizer.standardize(root, "/i?ы")
             val expectedPath = "i${_QUESTION}ы".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -166,7 +166,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/i?ы&э")
+            val input = standardizer.standardize(root, "/i?ы&э")
             val expectedPath = "i${_QUESTION}ы${_AMPERSAND}э".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -175,7 +175,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/i?ы=w&э=z")
+            val input = standardizer.standardize(root, "/i?ы=w&э=z")
             val expectedPath = "i${_QUESTION}ы=w${_AMPERSAND}э=z".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -264,7 +264,7 @@ class UrlLocalResourceHtmlPageTest {
         fun `кодированный ЧПУ ложится в свою директорию`() {
             // given
             val yi = "ы".urlEncode()
-            val input = canonicolizer.canonicalize(root, "/ы")
+            val input = standardizer.standardize(root, "/ы")
             assertThat(input.rawPath).isEqualTo("/$yi")
             val expectedPath = "ы"
             // when, then
@@ -274,7 +274,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ы?z")
+            val input = standardizer.standardize(root, "/ы?z")
             val expectedPath = "ы${_QUESTION}z".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -283,7 +283,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ы?f&g")
+            val input = standardizer.standardize(root, "/ы?f&g")
             val expectedPath = "ы${_QUESTION}f${_AMPERSAND}g".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -292,7 +292,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ы?f=z&g=w")
+            val input = standardizer.standardize(root, "/ы?f=z&g=w")
             val expectedPath = "ы${_QUESTION}f=z${_AMPERSAND}g=w".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -321,7 +321,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ф?ы")
+            val input = standardizer.standardize(root, "/ф?ы")
             val expectedPath = "ф${_QUESTION}ы".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -330,7 +330,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем элементы query`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ф?ы&э")
+            val input = standardizer.standardize(root, "/ф?ы&э")
             val expectedPath = "ф${_QUESTION}ы${_AMPERSAND}э".lowercase()
             // when, then
             whenThen(input, expectedPath)
@@ -339,7 +339,7 @@ class UrlLocalResourceHtmlPageTest {
         @Test
         fun `расшиваем элементы query со значениями`() {
             // given
-            val input = canonicolizer.canonicalize(root, "/ф?ы=z&э=w")
+            val input = standardizer.standardize(root, "/ф?ы=z&э=w")
             val expectedPath = "ф${_QUESTION}ы=z${_AMPERSAND}э=w".lowercase()
             // when, then
             whenThen(input, expectedPath)

@@ -11,7 +11,7 @@ import java.net.URI
 internal class UrlRelativizerTest {
 
     private val root = URI("https://aikisib.ru/")
-    private val canonicolizer: UrlCanonicolizer = UrlCanonicolizerImpl
+    private val standardizer: UrlStandardizer = UrlStandardizerImpl
     private val sut: UrlRelativizer = UrlRelativizerImpl
 
     private fun relativize(source: URI, target: URI) =
@@ -29,7 +29,7 @@ internal class UrlRelativizerTest {
         fun `путь к элементу во вложенной папке`() {
             // given
             val source = root
-            val target = canonicolizer.canonicalize(root, "/plugin/somePlugin/css/someStyle.css")
+            val target = standardizer.standardize(root, "/plugin/somePlugin/css/someStyle.css")
 
             // when
             val relative = relativize(source, target)
@@ -41,8 +41,8 @@ internal class UrlRelativizerTest {
         @Test
         fun `тестируем ссылку из корня на корень`() {
             // given
-            val source = canonicolizer.canonicalize(root, "#up")
-            val target = canonicolizer.canonicalize(root, "#down")
+            val source = standardizer.standardize(root, "#up")
+            val target = standardizer.standardize(root, "#down")
 
             // when
             val relative = relativize(source, target)
@@ -58,8 +58,8 @@ internal class UrlRelativizerTest {
         @Test
         fun `путь к элементу во вложенной папке`() {
             // given
-            val source = canonicolizer.canonicalize(root, "/plugin/somePlugin/css/someStyle.css")
-            val target = canonicolizer.canonicalize(root, "/plugin/somePlugin/css/font/someFont.wolf2")
+            val source = standardizer.standardize(root, "/plugin/somePlugin/css/someStyle.css")
+            val target = standardizer.standardize(root, "/plugin/somePlugin/css/font/someFont.wolf2")
 
             // when
             val relative = relativize(source, target)
@@ -71,21 +71,21 @@ internal class UrlRelativizerTest {
         @Test
         fun `путь к элементу в соседней папке`() {
             // given
-            val source = canonicolizer.canonicalize(root, "/plugin/somePlugin/css/someStyle.css")
-            val target = canonicolizer.canonicalize(root, "/plugin/somePlugin/font/someFont.wolf2")
+            val source = standardizer.standardize(root, "/plugin/somePlugin/css/someStyle.css")
+            val target = standardizer.standardize(root, "/plugin/somePlugin/font/someFont.wolf2")
 
             // when
             val relative = relativize(source, target)
 
             // then
-            assertThat(relative).isNull()
+            assertThat(relative.toString()).isEqualTo("https://aikisib.ru/plugin/somePlugin/font/someFont.wolf2")
         }
 
         @Test
         fun `путь к страничке кузену`() {
             // given
-            val source = canonicolizer.canonicalize(root, "/plugin1.html")
-            val target = canonicolizer.canonicalize(root, "/plugin2.html")
+            val source = standardizer.standardize(root, "/plugin1.html")
+            val target = standardizer.standardize(root, "/plugin2.html")
 
             // when
             val relative = relativize(source, target)
@@ -97,8 +97,8 @@ internal class UrlRelativizerTest {
         @Test
         fun `та же страничка другой фрагмент`() {
             // given
-            val source = canonicolizer.canonicalize(root, "/timetable#a=b")
-            val target = canonicolizer.canonicalize(root, "/timetable#c=d")
+            val source = standardizer.standardize(root, "/timetable#a=b")
+            val target = standardizer.standardize(root, "/timetable#c=d")
 
             // when
             val relative = relativize(source, target)
@@ -117,8 +117,8 @@ internal class UrlRelativizerTest {
         @Test
         fun `путь к элементу во вложенной папке`() {
             // given
-            val source = canonicolizer.canonicalize(root, "/$encodedPath/somePlugin/css/someStyle.css")
-            val target = canonicolizer.canonicalize(root, "/$encodedPath/somePlugin/css/font/someFont.wolf2")
+            val source = standardizer.standardize(root, "/$encodedPath/somePlugin/css/someStyle.css")
+            val target = standardizer.standardize(root, "/$encodedPath/somePlugin/css/font/someFont.wolf2")
 
             // when
             val relative = relativize(source, target)
@@ -130,8 +130,8 @@ internal class UrlRelativizerTest {
         @Test
         fun `путь к элементу во вложенной локализованной папке`() {
             // given
-            val source = canonicolizer.canonicalize(root, "/$encodedPath/somePlugin/css/someStyle.css")
-            val target = canonicolizer.canonicalize(root, "/$encodedPath/somePlugin/css/$encodedPath/someFont.wolf2")
+            val source = standardizer.standardize(root, "/$encodedPath/somePlugin/css/someStyle.css")
+            val target = standardizer.standardize(root, "/$encodedPath/somePlugin/css/$encodedPath/someFont.wolf2")
 
             // when
             val relative = relativize(source, target)
@@ -143,34 +143,34 @@ internal class UrlRelativizerTest {
         @Test
         fun `путь к элементу в соседней папке`() {
             // given
-            val source = canonicolizer.canonicalize(root, "/$encodedPath/somePlugin/css/someStyle.css")
-            val target = canonicolizer.canonicalize(root, "/$encodedPath/somePlugin/font/someFont.wolf2")
+            val source = standardizer.standardize(root, "/$encodedPath/somePlugin/css/someStyle.css")
+            val target = standardizer.standardize(root, "/$encodedPath/somePlugin/font/someFont.wolf2")
 
             // when
             val relative = relativize(source, target)
 
             // then
-            assertThat(relative).isNull()
+            assertThat(relative.toString()).isEqualTo("https://aikisib.ru/%D1%8B/somePlugin/font/someFont.wolf2")
         }
 
         @Test
         fun `путь к элементу в соседней локализованной папке`() {
             // given
-            val source = canonicolizer.canonicalize(root, "/$encodedPath/somePlugin/css/someStyle.css")
-            val target = canonicolizer.canonicalize(root, "/$encodedPath/somePlugin/$encodedPath/someFont.wolf2")
+            val source = standardizer.standardize(root, "/$encodedPath/somePlugin/css/someStyle.css")
+            val target = standardizer.standardize(root, "/$encodedPath/somePlugin/$encodedPath/someFont.wolf2")
 
             // when
             val relative = relativize(source, target)
 
             // then
-            assertThat(relative).isNull()
+            assertThat(relative.toString()).isEqualTo("https://aikisib.ru/%D1%8B/somePlugin/%D1%8B/someFont.wolf2")
         }
 
         @Test
         fun `путь к страничке кузену`() {
             // given
-            val source = canonicolizer.canonicalize(root, "/plugin1.html")
-            val target = canonicolizer.canonicalize(root, "/$encodedPath.html")
+            val source = standardizer.standardize(root, "/plugin1.html")
+            val target = standardizer.standardize(root, "/$encodedPath.html")
 
             // when
             val relative = relativize(source, target)
@@ -182,8 +182,8 @@ internal class UrlRelativizerTest {
         @Test
         fun `та же страничка другой фрагмент`() {
             // given
-            val source = canonicolizer.canonicalize(root, "/$encodedPath#a=b")
-            val target = canonicolizer.canonicalize(root, "/$encodedPath#c=d")
+            val source = standardizer.standardize(root, "/$encodedPath#a=b")
+            val target = standardizer.standardize(root, "/$encodedPath#c=d")
 
             // when
             val relative = relativize(source, target)

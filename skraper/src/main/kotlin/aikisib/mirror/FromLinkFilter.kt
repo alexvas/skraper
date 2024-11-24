@@ -1,5 +1,10 @@
 package aikisib.mirror
 
+import io.ktor.http.URLBuilder
+import io.ktor.http.URLProtocol
+import io.ktor.http.encodeURLPath
+import io.ktor.http.takeFrom
+import io.ktor.http.toURI
 import java.net.URI
 
 /**
@@ -49,6 +54,25 @@ internal fun URI.sameOrigin(ethalone: URI) =
         query,
         fragment,
     )
+
+internal fun URI.rawSameOrigin(ethalone: URI): URI {
+    return URLBuilder().takeFrom(this)
+        .also { urlBuilder ->
+            val segments = urlBuilder.encodedPathSegments
+            val encoded = segments.map { it.encodeURLPath() }
+            urlBuilder.encodedPathSegments = encoded
+            urlBuilder.protocol = when(ethalone.scheme) {
+                "http" -> URLProtocol.HTTP
+                "https" -> URLProtocol.HTTPS
+                else -> throw IllegalArgumentException("Illegal scheme of $ethalone")
+            }
+            urlBuilder.user = ethalone.userInfo
+            urlBuilder.host = ethalone.host
+            urlBuilder.port = if (ethalone.port in 0..65535) ethalone.port else 0
+        }
+        .build()
+        .toURI()
+}
 
 private fun URI.sameSchemeAs(anyRoot: URI) =
     URI(

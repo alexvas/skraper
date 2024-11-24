@@ -11,11 +11,11 @@ import java.net.URI
 import java.net.URLEncoder
 import kotlin.text.Charsets.UTF_8
 
-class UrlCanonicalizationTest {
+class UrlStandardizerTest {
 
     // Корневой URI для всех абсолютных
     private val root = URI.create("https://aikido.nsk.su")
-    private val sut: UrlCanonicolizer = UrlCanonicolizerImpl
+    private val sut: UrlStandardizer = UrlStandardizerImpl
 
     @Nested
     inner class `путь отсутствует` {
@@ -26,7 +26,7 @@ class UrlCanonicalizationTest {
             val input = "$root"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$input/")
@@ -38,7 +38,7 @@ class UrlCanonicalizationTest {
             val input = "$root/"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo(input)
@@ -56,7 +56,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$path"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo(input)
@@ -68,7 +68,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$path/"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/$path")
@@ -80,7 +80,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$path$SLASH"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.rawPath).isEqualTo("/$path$SLASH")
@@ -92,7 +92,7 @@ class UrlCanonicalizationTest {
             val input = "$root/i${SLASH}v"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.rawPath).isEqualTo("/i${SLASH}v")
@@ -111,7 +111,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$path"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/$encodedPath")
@@ -123,7 +123,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$path/"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/$encodedPath")
@@ -135,7 +135,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$path$SLASH"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.rawPath).isEqualTo("/$encodedPath$SLASH")
@@ -153,7 +153,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$encodedPath"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/i$SLASH&")
@@ -165,7 +165,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$encodedPath/"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/i$SLASH&")
@@ -177,7 +177,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$encodedPath$SLASH"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.rawPath).isEqualTo("/i$SLASH&$SLASH")
@@ -195,7 +195,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$encodedPath"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo(input)
@@ -207,7 +207,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$encodedPath/"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/$encodedPath")
@@ -219,7 +219,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$encodedPath$SLASH"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo(input)
@@ -238,7 +238,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$path?$query"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo(input)
@@ -250,7 +250,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$path/?$query"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/$path?$query")
@@ -262,7 +262,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$path$SLASH?$query"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.rawPath).isEqualTo("/$path$SLASH")
@@ -281,7 +281,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$path?$query"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo(input)
@@ -293,7 +293,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$path/?$query"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/$path?$query")
@@ -305,7 +305,7 @@ class UrlCanonicalizationTest {
             val input = "$root/$path$SLASH?$query"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.rawPath).isEqualTo("/$path$SLASH")
@@ -328,7 +328,7 @@ class UrlCanonicalizationTest {
                 val input = "$root/$path?$query#$fragment"
 
                 // when
-                val canonical = sut.canonicalize(root, input)
+                val canonical = sut.standardize(root, input)
 
                 // then
                 assertThat(canonical.toString()).isEqualTo(input)
@@ -340,7 +340,7 @@ class UrlCanonicalizationTest {
                 val input = "$root/$path/?$query#$fragment"
 
                 // when
-                val canonical = sut.canonicalize(root, input)
+                val canonical = sut.standardize(root, input)
 
                 // then
                 assertThat(canonical.toString()).isEqualTo("$root/$path?$query#$fragment")
@@ -352,7 +352,7 @@ class UrlCanonicalizationTest {
                 val input = "$root/$path$SLASH?$query#$fragment"
 
                 // when
-                val canonical = sut.canonicalize(root, input)
+                val canonical = sut.standardize(root, input)
 
                 // then
                 assertThat(canonical.rawPath).isEqualTo("/$path$SLASH")
@@ -369,7 +369,7 @@ class UrlCanonicalizationTest {
                 val input = "$root/$path?$query#$fragment"
 
                 // when
-                val canonical = sut.canonicalize(root, input)
+                val canonical = sut.standardize(root, input)
 
                 // then
                 assertThat(canonical.toString()).isEqualTo(input)
@@ -381,7 +381,7 @@ class UrlCanonicalizationTest {
                 val input = "$root/$path/?$query#$fragment"
 
                 // when
-                val canonical = sut.canonicalize(root, input)
+                val canonical = sut.standardize(root, input)
 
                 // then
                 assertThat(canonical.toString()).isEqualTo("$root/$path?$query#$fragment")
@@ -393,7 +393,7 @@ class UrlCanonicalizationTest {
                 val input = "$root/$path$SLASH?$query#$fragment"
 
                 // when
-                val canonical = sut.canonicalize(root, input)
+                val canonical = sut.standardize(root, input)
 
                 // then
                 assertThat(canonical.rawPath).isEqualTo("/$path$SLASH")
@@ -410,7 +410,7 @@ class UrlCanonicalizationTest {
                 val input = "$root/$path?$query#$fragment"
 
                 // when
-                val canonical = sut.canonicalize(root, input)
+                val canonical = sut.standardize(root, input)
 
                 // then
                 assertThat(canonical.toString()).isEqualTo(input)
@@ -422,7 +422,7 @@ class UrlCanonicalizationTest {
                 val input = "$root/$path/?$query#$fragment"
 
                 // when
-                val canonical = sut.canonicalize(root, input)
+                val canonical = sut.standardize(root, input)
 
                 // then
                 assertThat(canonical.toString()).isEqualTo("$root/$path?$query#$fragment")
@@ -434,7 +434,7 @@ class UrlCanonicalizationTest {
                 val input = "$root/$path$SLASH?$query#$fragment"
 
                 // when
-                val canonical = sut.canonicalize(root, input)
+                val canonical = sut.standardize(root, input)
 
                 // then
                 assertThat(canonical.rawPath).isEqualTo("/$path$SLASH")
@@ -451,7 +451,7 @@ class UrlCanonicalizationTest {
             assertThatIllegalArgumentException()
                 .isThrownBy {
                     // when
-                    sut.canonicalize(root, input)
+                    sut.standardize(root, input)
                 }
                 // then
                 .withMessageContaining("Illegal character in fragment at index ")
@@ -468,7 +468,7 @@ class UrlCanonicalizationTest {
             val relativeInput = "../fonts/someFont.wolf2"
 
             // when
-            val canonical = sut.canonicalize(parent, relativeInput)
+            val canonical = sut.standardize(parent, relativeInput)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/plugins/somePlugin/fonts/someFont.wolf2")
@@ -480,7 +480,7 @@ class UrlCanonicalizationTest {
             val relativeInput = "./fonts/someFont.wolf2"
 
             // when
-            val canonical = sut.canonicalize(root, relativeInput)
+            val canonical = sut.standardize(root, relativeInput)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/fonts/someFont.wolf2")
@@ -493,7 +493,7 @@ class UrlCanonicalizationTest {
             val relativeInput = "./fonts/someFont.wolf2"
 
             // when
-            val canonical = sut.canonicalize(parent, relativeInput)
+            val canonical = sut.standardize(parent, relativeInput)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/fonts/someFont.wolf2")
@@ -505,7 +505,7 @@ class UrlCanonicalizationTest {
             val relativeInput = "."
 
             // when
-            val canonical = sut.canonicalize(root, relativeInput)
+            val canonical = sut.standardize(root, relativeInput)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/")
@@ -519,7 +519,7 @@ class UrlCanonicalizationTest {
             val parent = URI("$root/")
 
             // when
-            val canonical = sut.canonicalize(parent, relativeInput)
+            val canonical = sut.standardize(parent, relativeInput)
 
             // then
             assertThat(canonical.toString()).isEqualTo("$root/")
@@ -532,7 +532,7 @@ class UrlCanonicalizationTest {
             val input = "../somefile.jpg"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.rawPath).isEqualTo("/../somefile.jpg")
@@ -544,7 +544,7 @@ class UrlCanonicalizationTest {
             val input = "/nso/"
 
             // when
-            val canonical = sut.canonicalize(root, input)
+            val canonical = sut.standardize(root, input)
 
             // then
             assertThat(canonical.rawPath).isEqualTo("/nso")
@@ -558,7 +558,7 @@ class UrlCanonicalizationTest {
         val input = "//fonts.googleapis.com/css?family=Montserrat:300,300italic,400,400italic,700,700italic"
 
         // when
-        val canonical = sut.canonicalize(root, input)
+        val canonical = sut.standardize(root, input)
 
         // then
         assertThat(canonical.toString()).isEqualTo("https://fonts.googleapis.com/css?family=Montserrat:300,300italic,400,400italic,700,700italic")
@@ -571,7 +571,7 @@ class UrlCanonicalizationTest {
         val input = "//fonts.googleapis.com/css?family=Montserrat:300,300italic,400,400italic,700,700italic|Oswald:300,300italic,400,400italic,700,700italic|Open+Sans:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext,cyrillic"
 
         // when
-        val canonical = sut.canonicalize(root, input)
+        val canonical = sut.standardize(root, input)
 
         // then
         val expected = "https:" + input.replace("|", "%7C")
