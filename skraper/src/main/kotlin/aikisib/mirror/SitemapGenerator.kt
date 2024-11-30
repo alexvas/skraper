@@ -17,6 +17,7 @@ interface SitemapGenerator {
 internal class SitemapGeneratorImpl(
     private val canonicalHref: URI,
     private val targerRootPath: Path,
+    private val robotsUserAgentAllDisallow: List<String>,
 ) : SitemapGenerator {
 
     override fun generate(descriptions: Sequence<OriginalDescription>) {
@@ -48,17 +49,18 @@ internal class SitemapGeneratorImpl(
     }
 
     private fun generateAndSaveRobotsTxt() {
-        val robotsTxtContent = RobotsTxtGenerator.of(canonicalHref.toString())
+        val userAgentAll = RobotsRule.builder().userAgentAll().disallow("/*?*");
+        robotsUserAgentAllDisallow.forEach { userAgentAll.disallow(it) }
+        val robotsTxt = RobotsTxtGenerator.of(canonicalHref.toString())
             .addSitemap("sitemap.xml")
-            .addRule(RobotsRule.builder().userAgentAll().disallow("/*?*").build())
-            .toString()
+            .addRule(userAgentAll.build())
         val cleanParam = (
             ('a'..'z') +
                 ('A'..'Z') +
                 ('0'..'9') +
                 '.' + '_' + '-')
             .joinToString("&")
-        val robotsTxtContentWithCleanParams = """$robotsTxtContent
+        val robotsTxtContentWithCleanParams = """$robotsTxt
                                                 |Clean-param: $cleanParam""".trimMargin("|")
         targerRootPath.resolve("robots.txt").writeText(robotsTxtContentWithCleanParams)
     }

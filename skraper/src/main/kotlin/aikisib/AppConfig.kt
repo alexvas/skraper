@@ -72,6 +72,11 @@ data class MainConfig(
      * Директория очищается вначале работы приложения.
      */
     val mirrorDir: File,
+
+    /**
+     * Ненужные для обхода поисковым движком станицы.
+     */
+    val robotsUserAgentAllDisallow: List<String>
 )
 
 @Serializable

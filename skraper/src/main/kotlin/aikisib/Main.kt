@@ -95,6 +95,7 @@ suspend fun mirrorSite(appConfig: AppConfig) {
     val sitemapGenerator: SitemapGenerator = SitemapGeneratorImpl(
         canonicalHref = canonicalHref,
         targerRootPath = toRoot,
+        robotsUserAgentAllDisallow = mainConfig.robotsUserAgentAllDisallow
     )
     val recursiveScraper: RecursiveScraper = RecursiveScraperImpl(
         fromRoot = rootMain,
